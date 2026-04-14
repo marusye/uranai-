@@ -38,11 +38,42 @@
     }
 
     .card-image {
+      display: none;
+    }
+
+    .card-face {
       width: 200px;
       max-width: 75vw;
+      aspect-ratio: 2/3.5;
       border-radius: 14px;
       box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-      display: block;
+      background: linear-gradient(160deg, #1a0a3a 0%, #2d1060 50%, #1a0a3a 100%);
+      border: 2px solid #e8c97a;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 20px;
+    }
+
+    .card-face .card-symbol {
+      font-size: 60px;
+      line-height: 1;
+    }
+
+    .card-face .card-label {
+      font-size: 16px;
+      color: #e8c97a;
+      text-align: center;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+
+    .card-face .card-deco {
+      font-size: 20px;
+      color: rgba(232, 201, 122, 0.5);
+      letter-spacing: 4px;
     }
 
     .lucky-ribbon {
@@ -114,6 +145,12 @@
   <div class="card-wrap" id="cardWrap">
     <div class="lucky-ribbon">🌟 ラッキーデー</div>
     <img id="cardImage" class="card-image" src="" alt="タロットカード">
+    <div class="card-face" id="cardFace">
+      <div class="card-deco">✦ ✦ ✦</div>
+      <div class="card-symbol" id="cardSymbol"></div>
+      <div class="card-label" id="cardLabel"></div>
+      <div class="card-deco">✦ ✦ ✦</div>
+    </div>
   </div>
 
   <div class="card-name" id="cardName"></div>
@@ -124,29 +161,29 @@
 
   <script>
     const cards = [
-      { name: "魔術師",    image: "images/00 magician.png",         message: "あなたの中にはすでに必要なものがそろっています。自分の力を信じて、行動に移してみましょう。" },
-      { name: "愚者",      image: "images/01 the fool.png",          message: "正解かどうかより、まず一歩踏み出すことが大切。今日は思い切って新しいことを始めてみましょう。" },
-      { name: "女教皇",    image: "images/02 the highpriestess.png", message: "今日は自分の直感を大切にしてみて。頭より心の声に従うと、答えが見えてくるかもしれません。" },
-      { name: "女帝",      image: "images/03 the empress.png",       message: "今日は自分を甘やかしていい日。好きなものを食べたり、ゆっくり過ごしたり、自分を大切に。" },
-      { name: "皇帝",      image: "images/04 the emperor.png",       message: "一歩一歩着実に進める日。計画を立てて取り組むことで、確かな結果につながっていきます。" },
-      { name: "法王",      image: "images/05 the hierohant.png",     message: "先輩や経験者の言葉に耳を傾けてみて。誰かのアドバイスが、今日の大きなヒントになります。" },
-      { name: "恋人",      image: "images/06 the lovers.png",        message: "大切な選択をする日かもしれません。自分が本当に望むものを、正直に選んでみましょう。" },
-      { name: "戦車",      image: "images/07 the chariot.png",       message: "迷いを捨てて、自信を持って突き進む日。今日のあなたには、前に進む力が満ちています。" },
-      { name: "力",        image: "images/08 strength.png",          message: "焦らなくて大丈夫。どんな状況でも、それを乗り越える力がちゃんとあなたの中にあります。" },
-      { name: "隠者",      image: "images/09 the hermit.png",        message: "今日は一人の時間を大切に。ゆっくり自分と向き合うことで、本当に大切なことが見えてきます。" },
-      { name: "運命の輪",  image: "images/10 wheel of fortune.png",  message: "流れが変わり始める日。うまくいかなかったことが、好転するサインかもしれません。" },
-      { name: "正義",      image: "images/11 justice.png",           message: "正直に、誠実に過ごすことが今日のテーマ。自分に嘘をつかず、素直な気持ちを大切に。" },
-      { name: "吊られた男",image: "images/12 the hanged man.png",    message: "一度立ち止まって、違う角度から見てみて。今まで気づかなかった答えが、そこにあるかも。" },
-      { name: "死神",      image: "images/13 death.png",             message: "何かを手放すことで、新しいものが入ってくる日。変化を恐れずに受け入れてみましょう。" },
-      { name: "節制",      image: "images/14 temperance.png",        message: "無理せず、ほどよくがちょうどいい日。バランスを意識して、マイペースに過ごしましょう。" },
-      { name: "悪魔",      image: "images/15 devil.png",             message: "今日はちょっと立ち止まって考えてみて。本当に必要なものと、そうでないものを見極める日。" },
-      { name: "塔",        image: "images/16 the tower.png",         message: "予期せぬことが起きても大丈夫。それはより良い方向への変化の始まりかもしれません。" },
-      { name: "星",        image: "images/17 the star.png",          message: "うまくいかない日が続いていても、必ず光は見えてきます。今日は希望を持って過ごしてみて。" },
-      { name: "月",        image: "images/18 the moon.png",          message: "今日は判断を急がなくてOK。もう少し時間をかけると、霧が晴れるように答えが見えてきます。" },
-      { name: "太陽",      image: "images/19 the sun.png",           message: "今日は最高の一日になりそう！元気いっぱいで動くと、どんどんいいことが集まってきます。" },
-      { name: "審判",      image: "images/20 judgment.png",          message: "過去を振り返り、次のステージへ進む日。後悔より学びに変えて、前を向いていきましょう。" },
-      { name: "世界",      image: "images/21 the warld.png",         message: "一つのことが完結し、新しいステージへ進む日。ここまでの自分をしっかり褒めてあげて。" },
-      { name: "あたり",    image: "images/22 atari.png",             message: "今日は何をしても許されるラッキーデー！悩みも不安も全部忘れて、思いっきり楽しんじゃおう！", lucky: true },
+      { name: "魔術師",    symbol: "🪄", message: "あなたの中にはすでに必要なものがそろっています。自分の力を信じて、行動に移してみましょう。" },
+      { name: "愚者",      symbol: "🌸", message: "正解かどうかより、まず一歩踏み出すことが大切。今日は思い切って新しいことを始めてみましょう。" },
+      { name: "女教皇",    symbol: "🌙", message: "今日は自分の直感を大切にしてみて。頭より心の声に従うと、答えが見えてくるかもしれません。" },
+      { name: "女帝",      symbol: "🌹", message: "今日は自分を甘やかしていい日。好きなものを食べたり、ゆっくり過ごしたり、自分を大切に。" },
+      { name: "皇帝",      symbol: "👑", message: "一歩一歩着実に進める日。計画を立てて取り組むことで、確かな結果につながっていきます。" },
+      { name: "法王",      symbol: "🔑", message: "先輩や経験者の言葉に耳を傾けてみて。誰かのアドバイスが、今日の大きなヒントになります。" },
+      { name: "恋人",      symbol: "💑", message: "大切な選択をする日かもしれません。自分が本当に望むものを、正直に選んでみましょう。" },
+      { name: "戦車",      symbol: "⚡", message: "迷いを捨てて、自信を持って突き進む日。今日のあなたには、前に進む力が満ちています。" },
+      { name: "力",        symbol: "🦁", message: "焦らなくて大丈夫。どんな状況でも、それを乗り越える力がちゃんとあなたの中にあります。" },
+      { name: "隠者",      symbol: "🕯️", message: "今日は一人の時間を大切に。ゆっくり自分と向き合うことで、本当に大切なことが見えてきます。" },
+      { name: "運命の輪",  symbol: "🎡", message: "流れが変わり始める日。うまくいかなかったことが、好転するサインかもしれません。" },
+      { name: "正義",      symbol: "⚖️", message: "正直に、誠実に過ごすことが今日のテーマ。自分に嘘をつかず、素直な気持ちを大切に。" },
+      { name: "吊られた男",symbol: "🌀", message: "一度立ち止まって、違う角度から見てみて。今まで気づかなかった答えが、そこにあるかも。" },
+      { name: "死神",      symbol: "🌑", message: "何かを手放すことで、新しいものが入ってくる日。変化を恐れずに受け入れてみましょう。" },
+      { name: "節制",      symbol: "🕊️", message: "無理せず、ほどよくがちょうどいい日。バランスを意識して、マイペースに過ごしましょう。" },
+      { name: "悪魔",      symbol: "🔗", message: "今日はちょっと立ち止まって考えてみて。本当に必要なものと、そうでないものを見極める日。" },
+      { name: "塔",        symbol: "⛈️", message: "予期せぬことが起きても大丈夫。それはより良い方向への変化の始まりかもしれません。" },
+      { name: "星",        symbol: "⭐", message: "うまくいかない日が続いていても、必ず光は見えてきます。今日は希望を持って過ごしてみて。" },
+      { name: "月",        symbol: "🌕", message: "今日は判断を急がなくてOK。もう少し時間をかけると、霧が晴れるように答えが見えてきます。" },
+      { name: "太陽",      symbol: "☀️", message: "今日は最高の一日になりそう！元気いっぱいで動くと、どんどんいいことが集まってきます。" },
+      { name: "審判",      symbol: "🎺", message: "過去を振り返り、次のステージへ進む日。後悔より学びに変えて、前を向いていきましょう。" },
+      { name: "世界",      symbol: "🌍", message: "一つのことが完結し、新しいステージへ進む日。ここまでの自分をしっかり褒めてあげて。" },
+      { name: "あたり",    symbol: "🌟", message: "今日は何をしても許されるラッキーデー！悩みも不安も全部忘れて、思いっきり楽しんじゃおう！", lucky: true },
     ];
 
     // 日付からカードを決定（毎日変わる・全ユーザー共通・日本時間基準）
@@ -162,8 +199,8 @@
     document.getElementById('dateDisplay').textContent = dateStr;
 
     // カード表示
-    document.getElementById('cardImage').src = card.image;
-    document.getElementById('cardImage').alt = card.name;
+    document.getElementById('cardSymbol').textContent = card.symbol;
+    document.getElementById('cardLabel').textContent = card.name;
     document.getElementById('cardName').textContent = card.name;
     document.getElementById('cardMessage').textContent = card.message;
 
