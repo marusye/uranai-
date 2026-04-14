@@ -99,7 +99,7 @@
     <div class="input-grid">
       <div class="input-group">
         <label>生年月日</label>
-        <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+        <input type="date" id="birthInput" min="1900-01-01" max="2099-12-31">
       </div>
       <div class="input-group">
         <label>生まれた時刻</label>
@@ -511,8 +511,9 @@ function elemBalance(lons, ASC) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 function calculate() {
   const raw = document.getElementById('birthInput').value.trim();
-  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
-  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  if (!raw) { alert('生年月日を選択してください'); return; }
+  const parts = raw.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!parts) { alert('生年月日を選択してください'); return; }
   const year  = parseInt(parts[1]);
   const month = parseInt(parts[2]);
   const day   = parseInt(parts[3]);
@@ -630,7 +631,7 @@ function calculate() {
 
   const t = new Date();
   document.getElementById('birthInput').value =
-    t.getFullYear() + '/' + (t.getMonth()+1) + '/' + t.getDate();
+    t.getFullYear() + '-' + String(t.getMonth()+1).padStart(2,'0') + '-' + String(t.getDate()).padStart(2,'0');
 })();
 
 document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
