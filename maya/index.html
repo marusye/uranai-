@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>マヤ暦占い</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Cinzel:wght@400;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #07050a; --dark: #100c08; --card: #160f08;
+      --terra: #c85030; --jade: #2a9060; --gold: #c9a030; --cream: #c8b898;
+      --text: #f0e8d0; --dim: #806848;
+      --red: #c85030; --white-s: #b8c0c8; --blue-s: #2080a8; --yellow: #c8a020;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Serif JP', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 30% 20%, rgba(200,80,48,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(42,144,96,0.08) 0%, transparent 60%); pointer-events: none; }
+
+    .container { position: relative; z-index: 1; width: 100%; max-width: 640px; padding: 2rem 1rem 4rem; display: flex; flex-direction: column; align-items: center; gap: 1.8rem; }
+
+    /* Header */
+    .header { text-align: center; }
+    .header h1 { font-family: 'Cinzel', serif; font-size: 1.9rem; letter-spacing: 0.15em; color: var(--gold); text-shadow: 0 0 30px rgba(201,160,48,0.4); }
+    .header h1 span { font-family: 'Noto Serif JP', serif; font-size: 1.1rem; letter-spacing: 0.3em; display: block; margin-top: 0.2rem; background: linear-gradient(90deg, var(--terra), var(--gold), var(--jade)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .glyph-row { display: flex; gap: 0.4rem; justify-content: center; margin: 0.6rem 0; opacity: 0.6; font-size: 0.9rem; }
+    .header p { color: var(--dim); font-size: 0.8rem; letter-spacing: 0.1em; }
+
+    /* Input */
+    .input-section { background: var(--card); border: 1px solid rgba(201,160,48,0.3); border-radius: 16px; padding: 1.8rem; width: 100%; box-shadow: 0 0 40px rgba(200,80,48,0.08); }
+    .input-section label { display: block; font-size: 0.8rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    input[type="date"], input[type="number"], input[type="text"] { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(201,160,48,0.4); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 1rem; padding: 0.7rem 1rem; outline: none; transition: all 0.3s; color-scheme: dark; }
+    input[type="date"]:focus, input[type="number"]:focus, input[type="text"]:focus { border-color: var(--gold); box-shadow: 0 0 12px rgba(201,160,48,0.3); }
+    .date-row { display: flex; align-items: center; gap: 0.5rem; }
+    .date-group { display: flex; align-items: center; gap: 0.3rem; flex: 1; }
+    .date-group input { width: 100%; min-width: 0; }
+    .date-unit { font-size: 0.9rem; color: var(--dim, #888); white-space: nowrap; flex-shrink: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .btn { display: block; width: 100%; margin-top: 1.2rem; background: linear-gradient(135deg, #601808, #c85030, #601808); border: 1px solid rgba(200,80,48,0.6); border-radius: 8px; color: #fff; cursor: pointer; font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.3em; padding: 0.75rem; transition: all 0.2s; box-shadow: 0 2px 20px rgba(200,80,48,0.3); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 30px rgba(200,80,48,0.5); }
+
+    /* Sections */
+    .section { width: 100%; display: none; animation: fadeUp 0.5s ease both; }
+    .section.show { display: block; }
+    .section-title { text-align: center; font-size: 0.88rem; letter-spacing: 0.25em; color: var(--gold); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center; }
+    .section-title::before, .section-title::after { content: '◆'; font-size: 0.4rem; opacity: 0.7; }
+
+    /* Long Count */
+    .longcount-box { background: var(--card); border: 1px solid rgba(201,160,48,0.25); border-radius: 12px; padding: 1.2rem; text-align: center; }
+    .lc-nums { display: flex; justify-content: center; align-items: center; gap: 0.3rem; font-family: 'Cinzel', serif; font-size: 1.8rem; color: var(--gold); letter-spacing: 0.05em; margin-bottom: 0.4rem; }
+    .lc-sep { color: var(--dim); font-size: 1.2rem; }
+    .lc-labels { display: flex; justify-content: center; gap: 0.1rem; font-size: 0.6rem; color: var(--dim); letter-spacing: 0.05em; }
+    .lc-label { width: 2.4rem; text-align: center; }
+
+    /* Main seal card */
+    .seal-card { width: 100%; border-radius: 20px; padding: 2rem 1.5rem; text-align: center; position: relative; overflow: hidden; border: 2px solid; }
+    .seal-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 30%, rgba(255,255,255,0.06) 0%, transparent 70%); }
+    .seal-emoji { font-size: 5rem; line-height: 1; margin-bottom: 0.8rem; filter: drop-shadow(0 0 15px currentColor); }
+    .seal-name-jp { font-size: 1.6rem; font-weight: 900; margin-bottom: 0.2rem; }
+    .seal-name-en { font-family: 'Cinzel', serif; font-size: 0.75rem; letter-spacing: 0.2em; opacity: 0.7; margin-bottom: 1rem; }
+    .seal-badges { display: flex; justify-content: center; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .badge { padding: 0.3rem 0.8rem; border-radius: 20px; font-size: 0.78rem; border: 1px solid currentColor; letter-spacing: 0.05em; }
+    .seal-keywords { display: flex; justify-content: center; gap: 0.4rem; flex-wrap: wrap; }
+    .keyword { font-size: 0.7rem; color: rgba(255,255,255,0.5); background: rgba(255,255,255,0.05); border-radius: 4px; padding: 0.2rem 0.5rem; }
+
+    /* Tzolkin row */
+    .tzolkin-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .tz-card { background: var(--card); border: 1px solid rgba(201,160,48,0.2); border-radius: 12px; padding: 1rem; text-align: center; }
+    .tz-num { font-family: 'Cinzel', serif; font-size: 2.5rem; font-weight: 700; color: var(--gold); line-height: 1; }
+    .tz-label { font-size: 0.72rem; color: var(--dim); letter-spacing: 0.1em; margin-top: 0.2rem; }
+    .tz-sublabel { font-size: 0.82rem; color: var(--text); margin-top: 0.3rem; }
+
+    /* Tone card */
+    .tone-card { background: var(--card); border: 1px solid rgba(201,160,48,0.2); border-radius: 12px; padding: 1.4rem; width: 100%; }
+    .tone-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.8rem; }
+    .tone-num-big { font-family: 'Cinzel', serif; font-size: 3rem; color: var(--gold); line-height: 1; font-weight: 700; }
+    .tone-info h3 { font-size: 1rem; color: var(--gold); margin-bottom: 0.2rem; }
+    .tone-info p { font-size: 0.75rem; color: var(--dim); letter-spacing: 0.05em; }
+    .tone-desc { font-size: 0.88rem; line-height: 1.8; color: var(--text); }
+
+    /* Haab */
+    .haab-box { background: var(--card); border: 1px solid rgba(42,144,96,0.3); border-radius: 12px; padding: 1rem 1.4rem; display: flex; align-items: center; gap: 1rem; }
+    .haab-icon { font-size: 2rem; }
+    .haab-text h3 { font-size: 1rem; color: var(--jade); }
+    .haab-text p { font-size: 0.78rem; color: var(--dim); margin-top: 0.2rem; }
+
+    /* Interpretation */
+    .interp-card { background: var(--card); border-radius: 12px; padding: 1.4rem; border: 1px solid rgba(201,160,48,0.2); }
+    .interp-card h3 { font-size: 0.8rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.6rem; }
+    .interp-card p { font-size: 0.88rem; line-height: 1.9; }
+    .interp-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+
+    /* Color classes */
+    .color-red    { border-color: var(--red);    background: rgba(200,80,48,0.12); color: #e07060; }
+    .color-white  { border-color: var(--white-s); background: rgba(180,190,200,0.1); color: #c0c8d0; }
+    .color-blue   { border-color: var(--blue-s); background: rgba(32,128,168,0.12); color: #50a0c8; }
+    .color-yellow { border-color: var(--yellow); background: rgba(200,160,32,0.12); color: #d4b040; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    footer { position: relative; z-index: 1; color: var(--dim); font-size: 0.72rem; text-align: center; padding-bottom: 2rem; letter-spacing: 0.08em; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>MAYA <span>マヤ暦占い</span></h1>
+    <div class="glyph-row">𓀀 𓂀 𓆣 𓇋 𓆙 𓅓 𓀭 𓆑 𓅱 𓊹</div>
+    <p>ツォルキン暦とドリームスペルで読むあなたの紋章</p>
+  </div>
+
+  <div class="input-section">
+    <form onsubmit="calculate(); return false;">
+      <label>生年月日を入力してください</label>
+      <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+      <button type="submit" class="btn">紋章を読み解く</button>
+    </form>
+  </div>
+
+  <!-- Long Count -->
+  <div class="section" id="lcSection">
+    <div class="section-title">マヤ長期暦（ロングカウント）</div>
+    <div class="longcount-box" id="lcBox"></div>
+  </div>
+
+  <!-- Main seal card -->
+  <div class="section" id="sealSection">
+    <div id="sealCard"></div>
+  </div>
+
+  <!-- Tzolkin + Kin -->
+  <div class="section" id="tzSection">
+    <div class="section-title">ツォルキン暦</div>
+    <div class="tzolkin-row" id="tzRow"></div>
+  </div>
+
+  <!-- Tone -->
+  <div class="section" id="toneSection">
+    <div class="section-title">銀河の音（ガラクティックトーン）</div>
+    <div class="tone-card" id="toneCard"></div>
+  </div>
+
+  <!-- Haab -->
+  <div class="section" id="haabSection">
+    <div class="section-title">ハアブ暦（太陽暦）</div>
+    <div class="haab-box" id="haabBox"></div>
+  </div>
+
+  <!-- Interpretation -->
+  <div class="section" id="interpSection">
+    <div class="section-title">あなたへのメッセージ</div>
+    <div id="interpContent"></div>
+  </div>
+
+</div>
+<footer>マヤ暦占い · ドリームスペル方式（GMT相関 + Argüelles補正）</footer>
+
+<script>
+// ─── Seal Data ────────────────────────────────────────────────────────────────
+const SEALS = [
+  { jp:'赤い龍',           en:'Red Dragon',        emoji:'🐉', color:'red',
+    dir:'東', elem:'血と出産', keys:['誕生','母性','存在'],
+    desc:'すべての始まりを司る龍の紋章。深い母性愛と創造的なエネルギーを持ち、新しいものを生み出す力があります。自分を大切にし、周囲に愛と養育を注ぐことであなたの魂は輝きます。' },
+  { jp:'白い風',           en:'White Wind',         emoji:'🌬️', color:'white',
+    dir:'北', elem:'精神と通信', keys:['コミュニケーション','霊感','真実'],
+    desc:'風のように自由に真実の言葉を運ぶ紋章。直感的なコミュニケーション能力に恵まれ、言葉を通して人の心を動かします。聴くことと話すことのバランスがあなたの成長の鍵です。' },
+  { jp:'青い夜',           en:'Blue Night',         emoji:'🌙', color:'blue',
+    dir:'西', elem:'夢と豊かさ', keys:['夢','直感','内なる豊かさ'],
+    desc:'夢の世界に宿る深い洞察力を持つ紋章。豊かな想像力と内省の力で、物事の本質を見抜きます。夢や直感のメッセージを大切にすることで、潜在的な豊かさが現実となります。' },
+  { jp:'黄色い種',         en:'Yellow Seed',        emoji:'🌱', color:'yellow',
+    dir:'南', elem:'開花と目標', keys:['開花','焦点','可能性'],
+    desc:'潜在的な才能が花開く種の紋章。明確な目標への集中力と、粘り強く育てる力があります。蒔いた種は必ず実る—あなたの努力は時をかけて美しい花となって現れます。' },
+  { jp:'赤い蛇',           en:'Red Serpent',        emoji:'🐍', color:'red',
+    dir:'東', elem:'本能と生命力', keys:['本能','情熱','変容'],
+    desc:'生命力と情熱の蛇の紋章。肉体の知恵と強烈なエネルギーを持ち、変容と再生の力が宿っています。身体の声を聴き、本能を信頼することが、あなたの力の源泉です。' },
+  { jp:'白い世界の橋渡し', en:'White Worldbridger', emoji:'⚖️', color:'white',
+    dir:'北', elem:'橋渡しと平等', keys:['死と再生','機会','橋渡し'],
+    desc:'世界と世界を繋ぐ橋渡しの紋章。不要なものを手放し、新しい可能性へと架け橋を作る力があります。執着を超えて手放すことで、より大きな豊かさが流れ込んできます。' },
+  { jp:'青い手',           en:'Blue Hand',          emoji:'🖐️', color:'blue',
+    dir:'西', elem:'知識と癒し', keys:['達成','癒し','知識'],
+    desc:'知識と癒しの手の紋章。実際に手を動かし、創造し、達成することに喜びを感じます。触れることで癒しをもたらす力があり、あなたの手から奇跡が生まれます。' },
+  { jp:'黄色い星',         en:'Yellow Star',        emoji:'⭐', color:'yellow',
+    dir:'南', elem:'美と芸術', keys:['美','エレガンス','調和'],
+    desc:'美と輝きの星の紋章。芸術的センスと美的調和を愛し、世界に美しさをもたらします。あなた自身が星のように輝くとき、周囲の人たちもその光に照らされます。' },
+  { jp:'赤い月',           en:'Red Moon',           emoji:'🌊', color:'red',
+    dir:'東', elem:'流れと浄化', keys:['流れ','浄化','普遍的な水'],
+    desc:'流れと浄化の月の紋章。感情の流れに従い、直感的な感受性で宇宙の意図を受け取ります。抵抗をやめて流れに乗ることで、あなたの人生は自然と正しい方向へ導かれます。' },
+  { jp:'白い犬',           en:'White Dog',          emoji:'🐕', color:'white',
+    dir:'北', elem:'愛と忠誠', keys:['愛','忠誠','心の平和'],
+    desc:'誠実な愛と忠誠の犬の紋章。深い愛情と仲間への献身的な心を持ち、愛を与えることに喜びを感じます。無条件の愛を実践することが、あなたの使命の核心です。' },
+  { jp:'青い猿',           en:'Blue Monkey',        emoji:'🐒', color:'blue',
+    dir:'西', elem:'遊びと魔法', keys:['遊び','魔法','幻想'],
+    desc:'遊び心と魔法の猿の紋章。創造的なユーモアと天才的な発想力で、人生を楽しいゲームに変えます。真剣になりすぎず、遊び心を大切にすることがあなたの才能を解放します。' },
+  { jp:'黄色い人間',       en:'Yellow Human',       emoji:'🧑', color:'yellow',
+    dir:'南', elem:'自由意志と知恵', keys:['自由意志','知恵','影響'],
+    desc:'自由意志と叡智の人間の紋章。人間の自由な選択と精神的な知恵を体現します。高次の知恵に従いながらも、自分の意志で道を切り開くことがあなたの本質です。' },
+  { jp:'赤いスカイウォーカー', en:'Red Skywalker', emoji:'🦋', color:'red',
+    dir:'東', elem:'空間と予見', keys:['冒険','空間','目覚め'],
+    desc:'空間を超えて探求する天空の紋章。境界を超えた冒険と精神的な探求の力が宿っています。地上と天上を繋ぐ橋となり、新しい可能性の空間を開いていきます。' },
+  { jp:'白い魔法使い',     en:'White Wizard',       emoji:'🔮', color:'white',
+    dir:'北', elem:'時を超えた力', keys:['魔法','受容性','自然との調和'],
+    desc:'時を超えた魔法の紋章。鋭い直感と神秘的な知恵で、見えない世界とつながります。受け取ることを許可し、宇宙の魔法があなたを通して流れるとき、奇跡が起きます。' },
+  { jp:'青いワシ',         en:'Blue Eagle',         emoji:'🦅', color:'blue',
+    dir:'西', elem:'視力とビジョン', keys:['ビジョン','創造','マインド'],
+    desc:'高い視点から全体を見渡すワシの紋章。大きな視野と創造的なビジョンで、未来を見通します。高くから眺める視点を持つことで、あなたは最善の道を導き出せます。' },
+  { jp:'黄色い戦士',       en:'Yellow Warrior',     emoji:'⚔️', color:'yellow',
+    dir:'南', elem:'知性と勇気', keys:['質問','知性','勇気'],
+    desc:'真実を追い求める知的な戦士の紋章。恐れを超えて問い続ける勇気と、答えを探求する知性があります。疑問を持ち続けることが、あなたを本当の知恵へと導きます。' },
+  { jp:'赤い地球',         en:'Red Earth',          emoji:'🌍', color:'red',
+    dir:'東', elem:'進化と同期性', keys:['進化','航法','シンクロ'],
+    desc:'大地と同期するナビゲーターの紋章。シンクロニシティを敏感に察知し、宇宙の流れに乗る力があります。大地とつながりアースされることで、あなたの進化が加速します。' },
+  { jp:'白い鏡',           en:'White Mirror',       emoji:'🪞', color:'white',
+    dir:'北', elem:'秩序と反映', keys:['秩序','真実の反映','明晰さ'],
+    desc:'真実を映し出す鏡の紋章。物事の本質を明晰に見抜き、秩序をもたらす力があります。自分自身を正直に見つめることで、周囲の世界も美しく変容していきます。' },
+  { jp:'青い嵐',           en:'Blue Storm',         emoji:'⛈️', color:'blue',
+    dir:'西', elem:'変容とエネルギー', keys:['変容','自己発生','エネルギー'],
+    desc:'変容の嵐をもたらす紋章。強烈なエネルギーで古いものを一掃し、新しい自分を生み出します。嵐は破壊ではなく浄化—変化を恐れず受け入れることが進化の道です。' },
+  { jp:'黄色い太陽',       en:'Yellow Sun',         emoji:'☀️', color:'yellow',
+    dir:'南', elem:'普遍的な火と啓蒙', keys:['啓蒙','生命','普遍意識'],
+    desc:'すべてを照らす太陽の紋章。普遍的な愛と啓蒙の光を持ち、意識の拡大をもたらします。あなたは生まれながらに太陽のように輝く存在—その光を惜しみなく放ってください。' },
+];
+
+const TONES = [
+  { num:1,  jp:'磁気',     en:'Magnetic',    action:'統合する',   quality:'目的・引き寄せ',
+    desc:'すべてを引き寄せ統合する力。あなたは明確な目的を持ち、必要なものを磁力のように引き寄せます。' },
+  { num:2,  jp:'月',       en:'Lunar',       action:'極化する',   quality:'挑戦・安定',
+    desc:'二極の間で揺れながら安定を見つける力。挑戦を通して真の強さが生まれます。' },
+  { num:3,  jp:'電気',     en:'Electric',    action:'活性化する', quality:'サービス・絆',
+    desc:'周囲を活性化し結びつける電気的なエネルギー。奉仕することで最大の力を発揮します。' },
+  { num:4,  jp:'自己存在', en:'Self-Existing',action:'測定する',  quality:'形・定義',
+    desc:'形と定義を大切にする力。秩序と完成度への意識が、確かな基盤を作り出します。' },
+  { num:5,  jp:'倍音',     en:'Overtone',    action:'放射する',   quality:'放射・命令',
+    desc:'中心から光を放射する太陽のような力。生まれながらのリーダーシップと輝きがあります。' },
+  { num:6,  jp:'律動',     en:'Rhythmic',    action:'等化する',   quality:'バランス・組織',
+    desc:'リズムとバランスで物事を整える力。有機的に組織し、調和を生み出すことが得意です。' },
+  { num:7,  jp:'共鳴',     en:'Resonant',    action:'調整する',   quality:'チャンネル・鼓舞',
+    desc:'宇宙の周波数に同調するアンテナの力。高次の意志を受け取り、周囲に伝えます。' },
+  { num:8,  jp:'銀河',     en:'Galactic',    action:'調和する',   quality:'誠実・モデル化',
+    desc:'誠実さで銀河と調和する力。生き方そのものがメッセージになる、モデルとしての使命があります。' },
+  { num:9,  jp:'太陽',     en:'Solar',       action:'脈動する',   quality:'意図・実現',
+    desc:'太陽のように意図を脈動させる力。明確な意図を持つことで、現実を動かします。' },
+  { num:10, jp:'惑星',     en:'Planetary',   action:'完全にする', quality:'完璧・顕現',
+    desc:'完璧な顕現をもたらす力。地上に理想を具体化することがあなたの使命です。' },
+  { num:11, jp:'スペクトル',en:'Spectral',   action:'解放する',   quality:'自由・解消',
+    desc:'古いパターンを解放する自由の力。手放すことで、新しいエネルギーが解き放たれます。' },
+  { num:12, jp:'水晶',     en:'Crystal',     action:'捧げる',     quality:'協力・普遍化',
+    desc:'水晶のように透明な協力の力。共同創造と普遍的な愛を通して、使命が完成します。' },
+  { num:13, jp:'宇宙',     en:'Cosmic',      action:'超越する',   quality:'超越・永続・存在',
+    desc:'すべてを超越し宇宙と一体化する力。この音を持つあなたは、魂の旅の成熟期にいます。' },
+];
+
+// Haab months
+const HAAB_MONTHS = [
+  'ポップ','ウォ','シップ','ソッツ','セク','シュル',
+  'ヤシュキン','モル','チェン','ヤシュ','サック','ケ',
+  'マック','カンキン','ムワン','パックス','カヤブ','クムク',
+  'ウァイェブ(無名の5日)'
+];
+const HAAB_ICONS = ['🌺','🌊','🌙','🦇','💀','🐕','☀️','🌧️','🌑','🦎','🦢','🦌','🦢','☀️','🦉','🐦','🐢','🌽','🌀'];
+
+// ─── Julian Day ───────────────────────────────────────────────────────────────
+function julianDay(year, month, day) {
+  if (month <= 2) { year--; month += 12; }
+  const A = Math.floor(year / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + B - 1524.5;
+}
+
+// ─── Long Count ───────────────────────────────────────────────────────────────
+function longCount(jd) {
+  let d = Math.floor(jd) - 584283;
+  if (d < 0) d = 0;
+  const baktun = Math.floor(d / 144000); d %= 144000;
+  const katun  = Math.floor(d / 7200);   d %= 7200;
+  const tun    = Math.floor(d / 360);    d %= 360;
+  const winal  = Math.floor(d / 20);
+  const kin    = d % 20;
+  return { baktun, katun, tun, winal, kin };
+}
+
+// ─── Tzolkin (traditional GMT) ────────────────────────────────────────────────
+function tzolkin(jd) {
+  const maya = Math.floor(jd) - 584283;
+  const number   = ((maya + 3)  % 13 + 13) % 13 + 1;   // 1-13
+  const signIdx  = ((maya + 19) % 20 + 20) % 20;        // 0-19
+  return { number, signIdx };
+}
+
+// ─── Dreamspell Kin ───────────────────────────────────────────────────────────
+// Reference: Dec 21, 2012 = JD 2456283 = Kin 207
+function dreamspellKin(year, month, day) {
+  // Dreamspell skips Feb 29 (leap day has no Kin)
+  const isLeap = (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  let adjYear = year, adjMonth = month, adjDay = day;
+  if (isLeap && (month > 2 || (month === 2 && day === 29))) {
+    if (month === 2 && day === 29) return null; // leap day: no Kin
+    const d = new Date(year, month - 1, day);
+    d.setDate(d.getDate() - 1);
+    adjYear = d.getFullYear(); adjMonth = d.getMonth() + 1; adjDay = d.getDate();
+  }
+  const jd = Math.floor(julianDay(adjYear, adjMonth, adjDay));
+  const kin = ((jd - 2456282 + 206) % 260 + 260) % 260 + 1; // 1-260
+  const tone     = ((kin - 1) % 13) + 1;     // 1-13
+  const sealIdx  = (kin - 1) % 20;           // 0-19
+  return { kin, tone, sealIdx };
+}
+
+// ─── Haab ─────────────────────────────────────────────────────────────────────
+function haab(jd) {
+  const maya = Math.floor(jd) - 584283;
+  const pos  = ((maya + 348) % 365 + 365) % 365;
+  if (pos < 360) return { month: Math.floor(pos / 20), day: pos % 20 };
+  return { month: 18, day: pos - 360 };
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+function calculate() {
+  const raw = document.getElementById('birthInput').value.trim();
+  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
+  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  const y  = parseInt(parts[1]);
+  const m = parseInt(parts[2]);
+  const d   = parseInt(parts[3]);
+  if (y < 1800 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) {
+    alert('正しい日付を入力してください'); return;
+  }
+  const jd = julianDay(y, m, d);
+
+  // Long Count
+  const lc = longCount(jd);
+  document.getElementById('lcBox').innerHTML = `
+    <div class="lc-nums">
+      <span>${lc.baktun}</span><span class="lc-sep">.</span>
+      <span>${lc.katun}</span><span class="lc-sep">.</span>
+      <span>${lc.tun}</span><span class="lc-sep">.</span>
+      <span>${lc.winal}</span><span class="lc-sep">.</span>
+      <span>${lc.kin}</span>
+    </div>
+    <div class="lc-labels">
+      <div class="lc-label">バクトゥン</div><div class="lc-label"> </div>
+      <div class="lc-label">カトゥン</div><div class="lc-label"> </div>
+      <div class="lc-label">トゥン</div><div class="lc-label"> </div>
+      <div class="lc-label">ウィナル</div><div class="lc-label"> </div>
+      <div class="lc-label">キン</div>
+    </div>
+    <p style="font-size:0.75rem;color:var(--dim);margin-top:0.8rem">マヤ創造暦からの日数カウント</p>`;
+
+  // Dreamspell
+  const ds = dreamspellKin(y, m, d);
+  if (!ds) {
+    document.getElementById('sealCard').innerHTML = `<div style="text-align:center;padding:2rem;color:var(--dim)">2月29日（閏日）はドリームスペル暦においてキンが割り当てられない特別な日です。</div>`;
+  } else {
+    const seal = SEALS[ds.sealIdx];
+    const tone = TONES[ds.tone - 1];
+    const colorCls = 'color-' + seal.color;
+
+    // Seal card
+    document.getElementById('sealCard').innerHTML = `
+      <div class="seal-card ${colorCls}">
+        <div class="seal-emoji">${seal.emoji}</div>
+        <div class="seal-name-jp">${seal.jp}</div>
+        <div class="seal-name-en">${seal.en}</div>
+        <div class="seal-badges">
+          <span class="badge" style="border-color:currentColor">キン ${ds.kin}</span>
+          <span class="badge" style="border-color:currentColor">${tone.jp}の音 ${tone.num}</span>
+          <span class="badge" style="border-color:currentColor">方向: ${seal.dir}</span>
+        </div>
+        <div class="seal-keywords">${seal.keys.map(k=>`<span class="keyword">${k}</span>`).join('')}</div>
+      </div>`;
+
+    // Tone card
+    document.getElementById('toneCard').innerHTML = `
+      <div class="tone-header">
+        <div class="tone-num-big">${tone.num}</div>
+        <div class="tone-info">
+          <h3>${tone.jp}（${tone.en}）</h3>
+          <p>${tone.action} ／ ${tone.quality}</p>
+        </div>
+      </div>
+      <div class="tone-desc">${tone.desc}</div>`;
+
+    // Interpretation
+    document.getElementById('interpContent').innerHTML = `
+      <div class="interp-card" style="margin-bottom:0.8rem">
+        <h3>✦ 太陽の紋章 — あなたの顕在意識</h3>
+        <p>${seal.desc}</p>
+      </div>
+      <div class="interp-grid">
+        <div class="interp-card">
+          <h3>エレメント</h3>
+          <p>${seal.elem}</p>
+        </div>
+        <div class="interp-card">
+          <h3>方向と役割</h3>
+          <p>${seal.dir}の方向。${seal.color==='red'?'イニシエーター（開始者）':seal.color==='white'?'リファイナー（洗練者）':seal.color==='blue'?'トランスフォーマー（変容者）':'リップナー（成熟者）'}として、周囲を導く役割があります。</p>
+        </div>
+      </div>
+      <div class="interp-card" style="margin-top:0.8rem">
+        <h3>✦ 今のあなたへのメッセージ</h3>
+        <p>${seal.jp}の紋章を持つあなたは、${seal.keys.join('・')}のエネルギーを体現するために生まれてきました。銀河の音${tone.jp}（${tone.num}）は「${tone.action}」という行動の原理を持ちます。${tone.desc} キン${ds.kin}として、あなたは260日サイクルの中でユニークな位置を占めています。</p>
+      </div>`;
+  }
+
+  // Tzolkin
+  const tz = tzolkin(jd);
+  document.getElementById('tzRow').innerHTML = `
+    <div class="tz-card">
+      <div class="tz-num">${tz.number}</div>
+      <div class="tz-label">ツォルキン数（1〜13）</div>
+      <div class="tz-sublabel">第${tz.number}の日</div>
+    </div>
+    <div class="tz-card">
+      <div class="tz-num" style="font-size:1.8rem;padding-top:0.4rem">${SEALS[tz.signIdx].emoji}</div>
+      <div class="tz-label">デイサイン</div>
+      <div class="tz-sublabel">${SEALS[tz.signIdx].jp.replace('赤い','').replace('白い','').replace('青い','').replace('黄色い','')}</div>
+    </div>`;
+
+  // Haab
+  const h = haab(jd);
+  document.getElementById('haabBox').innerHTML = `
+    <div class="haab-icon">${HAAB_ICONS[h.month] || '📅'}</div>
+    <div class="haab-text">
+      <h3>${h.day} ${HAAB_MONTHS[h.month]}</h3>
+      <p>ハアブ暦（365日太陽暦）での誕生日 ／ 月: ${h.month + 1}/19</p>
+    </div>`;
+
+  // Show all
+  ['lcSection','sealSection','tzSection','toneSection','haabSection','interpSection'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.style.animationDelay = `${i * 0.07}s`;
+    el.classList.add('show');
+  });
+
+  setTimeout(() => document.getElementById('lcSection').scrollIntoView({behavior:'smooth', block:'start'}), 150);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const t = new Date();
+  document.getElementById('birthInput').value =
+    t.getFullYear() + '/' + (t.getMonth()+1) + '/' + t.getDate();
+})();
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+</script>
+</body>
+</html>

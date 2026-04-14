@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>四柱推命</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Cinzel:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red:     #c82030;
+      --red-l:   #e04050;
+      --gold:    #c9a84c;
+      --gold-l:  #f0d080;
+      --deep:    #08040a;
+      --dark:    #140808;
+      --card:    #1c0c10;
+      --text:    #f0e0c8;
+      --dim:     #8a7060;
+      --wood:    #4a9030; --wood-l: #72ba48;
+      --fire:    #c82030; --fire-l: #e04050;
+      --earth:   #b8902a; --earth-l: #d4b060;
+      --metal:   #7090a8; --metal-l: #a0c0d8;
+      --water:   #2050a8; --water-l: #4080d8;
+    }
+
+    body {
+      background: var(--deep);
+      color: var(--text);
+      font-family: 'Noto Serif JP', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Dragon watermark */
+    body::before {
+      content: '龍';
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 40vmin;
+      color: rgba(200, 32, 48, 0.04);
+      pointer-events: none;
+      z-index: 0;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 680px;
+      padding: 2rem 1rem 4rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .header {
+      text-align: center;
+      padding: 1rem 0 0.5rem;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .header-ornament {
+      color: var(--red);
+      font-size: 1.4rem;
+      opacity: 0.8;
+    }
+
+    .header h1 {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 0.3em;
+      background: linear-gradient(135deg, var(--gold), var(--red-l), var(--gold-l));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .header p {
+      color: var(--dim);
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+    }
+
+    .hr-ornament {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: 100%;
+      max-width: 300px;
+      margin: 0.5rem auto 0;
+    }
+    .hr-ornament::before, .hr-ornament::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    }
+    .hr-ornament span {
+      color: var(--gold);
+      font-size: 0.7rem;
+    }
+
+    /* ── Input Section ──────────────────────── */
+    .input-section {
+      background: var(--card);
+      border: 1px solid rgba(200, 32, 48, 0.3);
+      border-radius: 16px;
+      padding: 1.8rem;
+      width: 100%;
+      box-shadow: 0 0 40px rgba(200, 32, 48, 0.1), inset 0 1px 0 rgba(255,255,255,0.05);
+    }
+
+    .input-section label {
+      display: block;
+      font-size: 0.82rem;
+      color: var(--gold);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .input-group {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    input[type="date"], input[type="time"], input[type="number"], input[type="text"] {
+      width: 100%;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(200, 32, 48, 0.4);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.65rem 0.9rem;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      color-scheme: dark;
+    }
+
+    input[type="date"]:focus, input[type="time"]:focus, input[type="number"]:focus, input[type="text"]:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 12px rgba(200, 32, 48, 0.3);
+    }
+
+    .date-row { display: flex; align-items: center; gap: 0.5rem; }
+    .date-group { display: flex; align-items: center; gap: 0.3rem; flex: 1; }
+    .date-group input { width: 100%; min-width: 0; }
+    .date-unit { font-size: 0.9rem; color: var(--dim, #888); white-space: nowrap; flex-shrink: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .time-note {
+      font-size: 0.72rem;
+      color: var(--dim);
+      margin-top: 0.3rem;
+      letter-spacing: 0.05em;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      margin-top: 1.2rem;
+      background: linear-gradient(135deg, #800010, #c82030, #800010);
+      border: 1px solid rgba(200, 32, 48, 0.6);
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Noto Serif JP', serif;
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3em;
+      padding: 0.75rem;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 2px 20px rgba(200, 32, 48, 0.4);
+    }
+
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 30px rgba(200, 32, 48, 0.6); }
+    .btn:active { transform: translateY(0); }
+
+    /* ── Meishiki (命式) ─────────────────────── */
+    .meishiki-section {
+      width: 100%;
+      display: none;
+      animation: fadeSlide 0.6s ease both;
+    }
+
+    .meishiki-section.show { display: block; }
+
+    .section-title {
+      text-align: center;
+      font-size: 1rem;
+      letter-spacing: 0.3em;
+      color: var(--gold);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+
+    .section-title::before, .section-title::after {
+      content: '◆';
+      font-size: 0.5rem;
+      opacity: 0.7;
+    }
+
+    /* Four pillars table */
+    .pillars-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .pillar-label-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+
+    .pillar-label {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--dim);
+      letter-spacing: 0.1em;
+    }
+
+    .pillar-label.day-label {
+      color: var(--gold-l);
+    }
+
+    .pillar-card {
+      background: var(--card);
+      border: 1px solid rgba(200, 32, 48, 0.25);
+      border-radius: 12px;
+      overflow: hidden;
+      text-align: center;
+      position: relative;
+    }
+
+    .pillar-card.day-pillar {
+      border-color: var(--gold);
+      box-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+    }
+
+    .pillar-card.day-pillar::before {
+      content: '日主';
+      position: absolute;
+      top: 4px;
+      right: 6px;
+      font-size: 0.55rem;
+      color: var(--gold);
+      letter-spacing: 0.05em;
+    }
+
+    .stem-box, .branch-box {
+      padding: 0.7rem 0.4rem;
+    }
+
+    .stem-box {
+      border-bottom: 1px solid rgba(200, 32, 48, 0.2);
+    }
+
+    .kan-char {
+      font-size: 1.8rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 0.2rem;
+    }
+
+    .kan-read {
+      font-size: 0.6rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+
+    .kan-elem {
+      font-size: 0.65rem;
+      margin-top: 0.2rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .branch-box .kan-char {
+      font-size: 1.8rem;
+    }
+
+    .animal-char {
+      font-size: 0.7rem;
+      margin-top: 0.1rem;
+    }
+
+    /* Element colors */
+    .elem-wood  { color: var(--wood-l); }
+    .elem-fire  { color: var(--fire-l); }
+    .elem-earth { color: var(--earth-l); }
+    .elem-metal { color: var(--metal-l); }
+    .elem-water { color: var(--water-l); }
+
+    .bg-wood  { background: rgba(74, 144, 48, 0.15); }
+    .bg-fire  { background: rgba(200, 32, 48, 0.15); }
+    .bg-earth { background: rgba(184, 144, 42, 0.15); }
+    .bg-metal { background: rgba(112, 144, 168, 0.15); }
+    .bg-water { background: rgba(32, 80, 168, 0.15); }
+
+    /* ── Five Elements Balance ──────────────── */
+    .gogyou-section {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid rgba(200, 32, 48, 0.25);
+      border-radius: 16px;
+      padding: 1.4rem;
+      display: none;
+      animation: fadeSlide 0.6s ease 0.1s both;
+    }
+
+    .gogyou-section.show { display: block; }
+
+    .gogyou-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+    }
+
+    .gogyou-row {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .gogyou-label {
+      width: 60px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .gogyou-bar-wrap {
+      flex: 1;
+      height: 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .gogyou-bar {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .gogyou-count {
+      font-size: 0.88rem;
+      width: 20px;
+      text-align: right;
+      color: var(--dim);
+      flex-shrink: 0;
+    }
+
+    /* ── Day Master ─────────────────────────── */
+    .daymaster-section {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid var(--gold);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: none;
+      animation: fadeSlide 0.6s ease 0.2s both;
+      box-shadow: 0 0 30px rgba(201, 168, 76, 0.1);
+    }
+
+    .daymaster-section.show { display: block; }
+
+    .daymaster-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .daymaster-char {
+      font-size: 3.5rem;
+      font-weight: 900;
+      line-height: 1;
+      text-shadow: 0 0 20px currentColor;
+    }
+
+    .daymaster-info h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.2rem;
+    }
+
+    .daymaster-info p {
+      font-size: 0.78rem;
+      color: var(--dim);
+      letter-spacing: 0.05em;
+    }
+
+    .daymaster-traits {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin: 0.8rem 0;
+    }
+
+    .trait-tag {
+      padding: 0.2rem 0.6rem;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      border: 1px solid currentColor;
+      opacity: 0.85;
+    }
+
+    .daymaster-desc {
+      font-size: 0.88rem;
+      line-height: 1.9;
+      color: var(--text);
+    }
+
+    /* ── Fortune Message ────────────────────── */
+    .fortune-section {
+      width: 100%;
+      background: var(--card);
+      border: 1px solid rgba(200, 32, 48, 0.3);
+      border-radius: 16px;
+      padding: 1.5rem;
+      display: none;
+      animation: fadeSlide 0.6s ease 0.3s both;
+    }
+
+    .fortune-section.show { display: block; }
+
+    .fortune-section p {
+      font-size: 0.9rem;
+      line-height: 2;
+      color: var(--text);
+    }
+
+    /* ── Pillar detail cards ─────────────────── */
+    .pillar-detail {
+      width: 100%;
+      display: none;
+      animation: fadeSlide 0.6s ease 0.15s both;
+    }
+
+    .pillar-detail.show { display: block; }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 0.8rem;
+    }
+
+    @media (min-width: 500px) {
+      .detail-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+
+    .detail-card {
+      background: var(--card);
+      border: 1px solid rgba(200, 32, 48, 0.2);
+      border-radius: 10px;
+      padding: 0.8rem 0.6rem;
+      text-align: center;
+      font-size: 0.78rem;
+    }
+
+    .detail-card .dc-label {
+      color: var(--dim);
+      margin-bottom: 0.4rem;
+      letter-spacing: 0.05em;
+    }
+
+    .detail-card .dc-value {
+      font-size: 1rem;
+      font-weight: 700;
+    }
+
+    /* ── Animations ─────────────────────────── */
+    @keyframes fadeSlide {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      color: var(--dim);
+      font-size: 0.72rem;
+      text-align: center;
+      padding-bottom: 2rem;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-top">
+      <span class="header-ornament">☯</span>
+      <h1>四柱推命</h1>
+      <span class="header-ornament">☯</span>
+    </div>
+    <div class="hr-ornament"><span>◆◆◆</span></div>
+    <p style="margin-top:0.5rem">生年月日時から導く運命の命式</p>
+  </div>
+
+  <!-- Input -->
+  <div class="input-section">
+    <form onsubmit="calculate(); return false;">
+    <div class="input-row">
+      <div class="input-group">
+        <label>生年月日</label>
+        <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label>生まれた時刻</label>
+        <input type="time" id="timeInput" value="12:00">
+        <div class="time-note">不明な場合は正午(12:00)を選択</div>
+      </div>
+    </div>
+    <button type="submit" class="btn" onclick="calculate()">命 式 を 算 出</button>
+    </form>
+  </div>
+
+  <!-- 命式 -->
+  <div class="meishiki-section" id="meishikiSection">
+    <div class="section-title">命　式</div>
+    <div class="pillar-label-row">
+      <div class="pillar-label">年　柱</div>
+      <div class="pillar-label">月　柱</div>
+      <div class="pillar-label day-label">日　柱</div>
+      <div class="pillar-label">時　柱</div>
+    </div>
+    <div class="pillars-grid" id="pillarsGrid"></div>
+    <!-- Jikkan detail row -->
+    <div class="pillar-detail" id="pillarDetail">
+      <div class="section-title" style="margin-top:1.2rem;font-size:0.88rem">干 支 の 詳 細</div>
+      <div class="detail-grid" id="detailGrid"></div>
+    </div>
+  </div>
+
+  <!-- 五行バランス -->
+  <div class="gogyou-section" id="gogyouSection">
+    <div class="section-title">五 行 バ ラ ン ス</div>
+    <div class="gogyou-bars" id="gogyouBars"></div>
+  </div>
+
+  <!-- 日主分析 -->
+  <div class="daymaster-section" id="daymasterSection">
+    <div class="section-title">日 主 分 析</div>
+    <div id="daymasterContent"></div>
+  </div>
+
+  <!-- 鑑定文 -->
+  <div class="fortune-section" id="fortuneSection">
+    <div class="section-title">総　評</div>
+    <p id="fortuneText"></p>
+  </div>
+
+</div>
+
+<footer>四柱推命 · 節気に基づく命式算出（立春・節月方式）</footer>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────────
+const STEMS = [
+  { char:'甲', read:'きのえ',   elem:0, yin:false, alias:'木(陽)' },
+  { char:'乙', read:'きのと',   elem:0, yin:true,  alias:'木(陰)' },
+  { char:'丙', read:'ひのえ',   elem:1, yin:false, alias:'火(陽)' },
+  { char:'丁', read:'ひのと',   elem:1, yin:true,  alias:'火(陰)' },
+  { char:'戊', read:'つちのえ', elem:2, yin:false, alias:'土(陽)' },
+  { char:'己', read:'つちのと', elem:2, yin:true,  alias:'土(陰)' },
+  { char:'庚', read:'かのえ',   elem:3, yin:false, alias:'金(陽)' },
+  { char:'辛', read:'かのと',   elem:3, yin:true,  alias:'金(陰)' },
+  { char:'壬', read:'みずのえ', elem:4, yin:false, alias:'水(陽)' },
+  { char:'癸', read:'みずのと', elem:4, yin:true,  alias:'水(陰)' },
+];
+
+const BRANCHES = [
+  { char:'子', read:'ね',     animal:'鼠', elem:4 },
+  { char:'丑', read:'うし',   animal:'牛', elem:2 },
+  { char:'寅', read:'とら',   animal:'虎', elem:0 },
+  { char:'卯', read:'う',     animal:'兎', elem:0 },
+  { char:'辰', read:'たつ',   animal:'龍', elem:2 },
+  { char:'巳', read:'み',     animal:'蛇', elem:1 },
+  { char:'午', read:'うま',   animal:'馬', elem:1 },
+  { char:'未', read:'ひつじ', animal:'羊', elem:2 },
+  { char:'申', read:'さる',   animal:'猿', elem:3 },
+  { char:'酉', read:'とり',   animal:'鶏', elem:3 },
+  { char:'戌', read:'いぬ',   animal:'犬', elem:2 },
+  { char:'亥', read:'い',     animal:'猪', elem:4 },
+];
+
+const ELEMENTS = [
+  { char:'木', read:'もく', color:'var(--wood)',  light:'var(--wood-l)',  cls:'wood',  desc:'成長・発展・柔軟' },
+  { char:'火', read:'か',   color:'var(--fire)',  light:'var(--fire-l)',  cls:'fire',  desc:'情熱・活力・輝き' },
+  { char:'土', read:'ど',   color:'var(--earth)', light:'var(--earth-l)', cls:'earth', desc:'安定・包容・信頼' },
+  { char:'金', read:'こん', color:'var(--metal)', light:'var(--metal-l)', cls:'metal', desc:'規律・決断・収穫' },
+  { char:'水', read:'すい', color:'var(--water)', light:'var(--water-l)', cls:'water', desc:'知恵・流動・深遠' },
+];
+
+const ELEM_CLASS = ['wood','fire','earth','metal','water'];
+const ELEM_BG    = ['bg-wood','bg-fire','bg-earth','bg-metal','bg-water'];
+
+// ─── Day Master Data ──────────────────────────────────────────────────────────
+const DAY_MASTER = [
+  {
+    stem:0, name:'甲木(きのえ)', nature:'大樹の気',
+    traits:['向上心','リーダー','正直','頑固'],
+    desc:'まっすぐ天に向かって伸びる大樹のような気質。高い理想と強い上昇志向を持ち、困難にも折れない精神力があります。誠実で正義感が強く、人から頼られる存在になります。ただし融通が利かない一面もあるため、柔軟さを意識することが成長の鍵です。'
+  },
+  {
+    stem:1, name:'乙木(きのと)', nature:'草花の気',
+    traits:['協調性','芸術的','繊細','適応力'],
+    desc:'しなやかに風に揺れる草花のような気質。柔軟な適応力と豊かな感受性を持ち、美的センスに優れています。協調性が高く周囲と調和しながら目標を達成する力があります。内なる強さで困難をそっと乗り越えていきます。'
+  },
+  {
+    stem:2, name:'丙火(ひのえ)', nature:'太陽の気',
+    traits:['明朗快活','社交的','情熱的','寛大'],
+    desc:'燦然と輝く太陽のような気質。明るく開放的で、周囲を照らす存在感があります。情熱と行動力で物事を推し進め、人を引き付ける魅力があります。気前よく周囲に与える寛大な心の持ち主ですが、時に自己中心的にならないよう心がけましょう。'
+  },
+  {
+    stem:3, name:'丁火(ひのと)', nature:'灯火の気',
+    traits:['直感力','思いやり','芸術的','神秘的'],
+    desc:'静かに灯る炎のような気質。鋭い直感と深い洞察力を持ち、人の心を照らす温かさがあります。芸術・精神世界への関心が高く、繊細な感受性で物事の本質を見抜きます。内側から輝く力で、周囲に安らぎをもたらします。'
+  },
+  {
+    stem:4, name:'戊土(つちのえ)', nature:'山岳の気',
+    traits:['安定感','包容力','信頼性','頑健'],
+    desc:'どっしりとした山のような気質。揺るぎない安定感と大きな包容力で、周囲の人を受け止めます。誠実で責任感が強く、長期的な視点で物事を進める力があります。信頼の積み重ねで確かな地位を築いていきます。'
+  },
+  {
+    stem:5, name:'己土(つちのと)', nature:'大地の気',
+    traits:['慎重','実用的','几帳面','世話好き'],
+    desc:'豊かな田畑の土のような気質。細やかな配慮と実用的な思考で、物事を丁寧に育てます。几帳面で責任感が強く、周囲のケアを惜しまない献身的な面があります。地道な努力を積み重ねることで大きな実りを得ます。'
+  },
+  {
+    stem:6, name:'庚金(かのえ)', nature:'剛鉄の気',
+    traits:['決断力','正義感','意志強固','義侠心'],
+    desc:'鋭く研ぎ澄まされた鋼のような気質。強い意志と決断力を持ち、曲がったことを嫌う正義感があります。義理堅く、一度決めたことはやり通す頑固さが強みです。その強さで困難を切り開いていきます。'
+  },
+  {
+    stem:7, name:'辛金(かのと)', nature:'宝玉の気',
+    traits:['審美眼','精密','洗練','繊細'],
+    desc:'磨かれた宝石のような気質。鋭い審美眼と洗練された感性を持ち、細部へのこだわりに優れています。品格と知性を重んじ、自分の信念をきちんと持つ誇り高い気質です。繊細さと強さを併せ持つ、光を放つ存在です。'
+  },
+  {
+    stem:8, name:'壬水(みずのえ)', nature:'大河の気',
+    traits:['知性','行動力','適応力','スケールの大きさ'],
+    desc:'滔々と流れる大河のような気質。豊かな知性と行動力を持ち、どんな状況にも柔軟に対応します。視野が広くスケールの大きな発想で、多くの人を動かす力があります。淀まず流れ続ける強さが道を切り開きます。'
+  },
+  {
+    stem:9, name:'癸水(みずのと)', nature:'雨露の気',
+    traits:['感受性','洞察力','神秘的','共感力'],
+    desc:'天から降り注ぐ雨露のような気質。深い感受性と鋭い洞察力を持ち、人の心の機微をとらえます。神秘的な魅力と豊かな想像力で、芸術・精神世界に才能を発揮します。静かな中に無限の可能性を秘めています。'
+  },
+];
+
+// ─── Calculation ──────────────────────────────────────────────────────────────
+
+/** Julian Day Number */
+function julianDayNumber(y, m, d) {
+  const a = Math.floor((14 - m) / 12);
+  const Y = y + 4800 - a;
+  const M = m + 12 * a - 3;
+  return d + Math.floor((153 * M + 2) / 5) + 365 * Y
+       + Math.floor(Y / 4) - Math.floor(Y / 100)
+       + Math.floor(Y / 400) - 32045;
+}
+
+/** Is the date on or after Risshun (~Feb 4)? */
+function isAfterRisshun(month, day) {
+  return month > 2 || (month === 2 && day >= 4);
+}
+
+/** Year for year pillar (changes at Risshun, Feb 4) */
+function meishikiYear(year, month, day) {
+  return isAfterRisshun(month, day) ? year : year - 1;
+}
+
+/** Year pillar (天干 index, 地支 index) */
+function yearPillar(year, month, day) {
+  const y = meishikiYear(year, month, day);
+  const stemIdx   = ((y - 4) % 10 + 10) % 10;
+  const branchIdx = ((y - 4) % 12 + 12) % 12;
+  return { stem: stemIdx, branch: branchIdx };
+}
+
+/**
+ * Month index (0 = 寅月, 1 = 卯月, ... 11 = 丑月)
+ * based on approximate solar term dates
+ */
+function monthIdx(month, day) {
+  // Boundaries: [month, day] when each 月 starts
+  // 0=寅(Feb4), 1=卯(Mar6), 2=辰(Apr5), 3=巳(May6),
+  // 4=午(Jun6), 5=未(Jul7), 6=申(Aug7), 7=酉(Sep8),
+  // 8=戌(Oct8), 9=亥(Nov7), 10=子(Dec7), 11=丑(Jan6)
+  const bounds = [[2,4],[3,6],[4,5],[5,6],[6,6],[7,7],[8,7],[9,8],[10,8],[11,7],[12,7]];
+  const dn = month * 100 + day;
+  let idx = 11; // 丑月 (Jan 1-Jan 5 and after small limits)
+  for (let i = 0; i < bounds.length; i++) {
+    if (dn >= bounds[i][0] * 100 + bounds[i][1]) idx = i;
+  }
+  return idx;
+}
+
+/** Month pillar */
+function monthPillar(year, month, day) {
+  const yp = yearPillar(year, month, day);
+  const mIdx = monthIdx(month, day);
+  // Month branch: 寅=2, 卯=3, ... (mIdx=0 → branch=2)
+  const branchIdx = (mIdx + 2) % 12;
+  // Month stem start for 寅月 depends on year stem
+  const stemStarts = [2, 4, 6, 8, 0]; // for year stem group 0-4
+  const startStem = stemStarts[yp.stem % 5];
+  const stemIdx = (startStem + mIdx) % 10;
+  return { stem: stemIdx, branch: branchIdx };
+}
+
+/** Day pillar */
+function dayPillar(year, month, day) {
+  // Reference: JDN 2415021 (Jan 1, 1900) = 甲戌 (stem=0, branch=10)
+  const jdn = julianDayNumber(year, month, day);
+  const ref = 2415021;
+  const diff = jdn - ref;
+  const stemIdx   = ((diff + 0)  % 10 + 10) % 10;
+  const branchIdx = ((diff + 10) % 12 + 12) % 12;
+  return { stem: stemIdx, branch: branchIdx };
+}
+
+/** Hour branch from hour (0-23) */
+function hourBranch(hour) {
+  if (hour === 23) return 0; // 子
+  return Math.floor((hour + 1) / 2);
+}
+
+/** Hour pillar */
+function hourPillar(hour, dayStem) {
+  const branchIdx = hourBranch(hour);
+  // Stem starts for 子刻 depends on day stem
+  const stemStarts = [0, 2, 4, 6, 8]; // for day stem group 0-4
+  const startStem = stemStarts[dayStem % 5];
+  const stemIdx = (startStem + branchIdx) % 10;
+  return { stem: stemIdx, branch: branchIdx };
+}
+
+/** All four pillars */
+function allPillars(year, month, day, hour) {
+  const yp = yearPillar(year, month, day);
+  const mp = monthPillar(year, month, day);
+  const dp = dayPillar(year, month, day);
+  const hp = hourPillar(hour, dp.stem);
+  return [
+    { ...yp, label:'年柱' },
+    { ...mp, label:'月柱' },
+    { ...dp, label:'日柱', isDay: true },
+    { ...hp, label:'時柱' },
+  ];
+}
+
+/** Count five elements across all 8 characters */
+function countElements(pillars) {
+  const counts = [0, 0, 0, 0, 0];
+  pillars.forEach(p => {
+    counts[STEMS[p.stem].elem]++;
+    counts[BRANCHES[p.branch].elem]++;
+  });
+  return counts;
+}
+
+// ─── Hour range display ───────────────────────────────────────────────────────
+const HOUR_RANGES = [
+  '23:00–01:00','01:00–03:00','03:00–05:00','05:00–07:00',
+  '07:00–09:00','09:00–11:00','11:00–13:00','13:00–15:00',
+  '15:00–17:00','17:00–19:00','19:00–21:00','21:00–23:00',
+];
+
+// ─── Fortune messages ─────────────────────────────────────────────────────────
+function buildFortune(pillars, elemCounts) {
+  const dayStem = pillars[2].stem;
+  const dm = DAY_MASTER[dayStem];
+  const dmElem = STEMS[dayStem].elem;
+
+  // Dominant/weakest element
+  const max = Math.max(...elemCounts);
+  const min = Math.min(...elemCounts);
+  const strongElem = elemCounts.indexOf(max);
+  const weakElem   = elemCounts.indexOf(min);
+
+  const strengthWord = ['木気','火気','土気','金気','水気'][strongElem];
+  const weakWord     = ['木気','火気','土気','金気','水気'][weakElem];
+  const weakDesc     = ['成長と発展','情熱と行動力','安定と信頼','規律と決断力','知恵と洞察力'][weakElem];
+
+  const yinYang = STEMS[dayStem].yin ? '陰の性質' : '陽の性質';
+
+  return `あなたの日主は「${dm.name}」、${dm.nature}を持つ命式です。${yinYang}を帯び、${dm.traits.join('・')}の資質が際立っています。\n\n` +
+    `命式全体では${strengthWord}が最も充実しており、${ELEMENTS[strongElem].desc}の力が豊かです。` +
+    (weakElem !== strongElem
+      ? `一方、${weakWord}はやや薄く、${weakDesc}を意識的に補うことでバランスが取れます。`
+      : '') +
+    `\n\n${dm.desc}\n\n` +
+    `この命式の持ち主は、持ち前の${dm.traits[0]}と${dm.traits[1]}を活かすことで、` +
+    `人生の本流を力強く歩むことができます。周囲との調和を大切にしながら、` +
+    `内なる使命を信じて前進してください。`;
+}
+
+// ─── Render ───────────────────────────────────────────────────────────────────
+function renderPillar(p, idx) {
+  const s = STEMS[p.stem];
+  const b = BRANCHES[p.branch];
+  const sElem = ELEM_CLASS[s.elem];
+  const bElem = ELEM_CLASS[b.elem];
+  const isDay = p.isDay;
+
+  return `
+  <div class="pillar-card ${isDay ? 'day-pillar' : ''}">
+    <div class="stem-box ${ELEM_BG[s.elem]}">
+      <div class="kan-char elem-${sElem}">${s.char}</div>
+      <div class="kan-read">${s.read}</div>
+      <div class="kan-elem elem-${sElem}">${ELEMENTS[s.elem].char}</div>
+    </div>
+    <div class="branch-box ${ELEM_BG[b.elem]}">
+      <div class="kan-char elem-${bElem}">${b.char}</div>
+      <div class="kan-read">${b.read}</div>
+      <div class="animal-char">${b.animal}</div>
+    </div>
+  </div>`;
+}
+
+function renderGogyou(counts) {
+  const total = counts.reduce((a, b) => a + b, 0);
+  return ELEMENTS.map((el, i) => {
+    const pct = total > 0 ? (counts[i] / total * 100) : 0;
+    return `
+    <div class="gogyou-row">
+      <div class="gogyou-label elem-${el.cls}">${el.char}（${el.read}）</div>
+      <div class="gogyou-bar-wrap">
+        <div class="gogyou-bar" style="width:0%;background:${el.light}" data-target="${pct.toFixed(1)}"></div>
+      </div>
+      <div class="gogyou-count elem-${el.cls}">${counts[i]}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderDayMaster(dayStemIdx) {
+  const dm = DAY_MASTER[dayStemIdx];
+  const s  = STEMS[dayStemIdx];
+  const el = ELEMENTS[s.elem];
+  return `
+    <div class="daymaster-header">
+      <div class="daymaster-char elem-${ELEM_CLASS[s.elem]}">${s.char}</div>
+      <div class="daymaster-info">
+        <h3 class="elem-${ELEM_CLASS[s.elem]}">${dm.name}</h3>
+        <p>${dm.nature} ／ ${s.yin ? '陰' : '陽'}干 ／ ${el.char}行</p>
+        <p style="margin-top:0.2rem">${el.desc}</p>
+      </div>
+    </div>
+    <div class="daymaster-traits">
+      ${dm.traits.map(t => `<span class="trait-tag elem-${ELEM_CLASS[s.elem]}">${t}</span>`).join('')}
+    </div>
+    <div class="daymaster-desc">${dm.desc}</div>`;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+function calculate() {
+  const raw = document.getElementById('birthInput').value.trim();
+  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
+  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  const year  = parseInt(parts[1]);
+  const month = parseInt(parts[2]);
+  const day   = parseInt(parts[3]);
+  if (year < 1800 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+    alert('正しい日付を入力してください'); return;
+  }
+  const timeVal = document.getElementById('timeInput').value || '12:00';
+  const [hour] = timeVal.split(':').map(Number);
+
+  const pillars = allPillars(year, month, day, hour);
+  const elemCounts = countElements(pillars);
+
+  // ── Render meishiki ──
+  document.getElementById('pillarsGrid').innerHTML =
+    pillars.map((p, i) => renderPillar(p, i)).join('');
+
+  // Detail info
+  const hBranch = pillars[3].branch;
+  document.getElementById('detailGrid').innerHTML = `
+    <div class="detail-card">
+      <div class="dc-label">立春年</div>
+      <div class="dc-value elem-${ELEM_CLASS[STEMS[pillars[0].stem].elem]}">${STEMS[pillars[0].stem].char}${BRANCHES[pillars[0].branch].char}年</div>
+    </div>
+    <div class="detail-card">
+      <div class="dc-label">節月</div>
+      <div class="dc-value elem-${ELEM_CLASS[STEMS[pillars[1].stem].elem]}">${STEMS[pillars[1].stem].char}${BRANCHES[pillars[1].branch].char}月</div>
+    </div>
+    <div class="detail-card">
+      <div class="dc-label">干支日</div>
+      <div class="dc-value elem-${ELEM_CLASS[STEMS[pillars[2].stem].elem]}">${STEMS[pillars[2].stem].char}${BRANCHES[pillars[2].branch].char}日</div>
+    </div>
+    <div class="detail-card">
+      <div class="dc-label">${BRANCHES[hBranch].char}の刻</div>
+      <div class="dc-value elem-${ELEM_CLASS[BRANCHES[hBranch].elem]}">${HOUR_RANGES[hBranch]}</div>
+    </div>`;
+
+  // ── Render gogyou ──
+  document.getElementById('gogyouBars').innerHTML = renderGogyou(elemCounts);
+
+  // ── Render day master ──
+  document.getElementById('daymasterContent').innerHTML = renderDayMaster(pillars[2].stem);
+
+  // ── Fortune ──
+  document.getElementById('fortuneText').innerHTML =
+    buildFortune(pillars, elemCounts).replace(/\n/g, '<br>');
+
+  // ── Show all sections ──
+  ['meishikiSection','pillarDetail','gogyouSection','daymasterSection','fortuneSection']
+    .forEach(id => {
+      const el = document.getElementById(id);
+      el.classList.remove('show');
+      void el.offsetWidth;
+      el.classList.add('show');
+    });
+
+  // ── Animate bars ──
+  setTimeout(() => {
+    document.querySelectorAll('.gogyou-bar').forEach(bar => {
+      bar.style.width = bar.dataset.target + '%';
+    });
+  }, 100);
+
+  // Scroll to result
+  setTimeout(() => {
+    document.getElementById('meishikiSection')
+      .scrollIntoView({ behavior:'smooth', block:'start' });
+  }, 200);
+}
+
+// Set default date to today
+(function() {
+  const t = new Date();
+  document.getElementById('birthInput').value =
+    t.getFullYear() + '/' + (t.getMonth()+1) + '/' + t.getDate();
+})();
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') calculate();
+});
+</script>
+</body>
+</html>

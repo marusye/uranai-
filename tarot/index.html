@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>今日のタロット</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: linear-gradient(160deg, #1a1a2e 0%, #16213e 60%, #0f3460 100%);
+      color: #fff;
+      font-family: 'Hiragino Sans', 'Yu Gothic', 'Noto Sans JP', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 36px 24px 48px;
+    }
+
+    .date {
+      font-size: 13px;
+      color: #a0a8c0;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .title {
+      font-size: 20px;
+      color: #e8c97a;
+      letter-spacing: 4px;
+      margin-bottom: 32px;
+    }
+
+    .card-wrap {
+      position: relative;
+      margin-bottom: 28px;
+    }
+
+    .card-image {
+      width: 200px;
+      max-width: 75vw;
+      border-radius: 14px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+      display: block;
+    }
+
+    .lucky-ribbon {
+      display: none;
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(90deg, #f7971e, #ffd200);
+      color: #333;
+      font-size: 12px;
+      font-weight: bold;
+      padding: 4px 16px;
+      border-radius: 20px;
+      white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(255, 200, 0, 0.4);
+    }
+
+    .lucky .lucky-ribbon { display: block; }
+
+    .card-name {
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      color: #e8c97a;
+      margin-bottom: 16px;
+      letter-spacing: 2px;
+    }
+
+    .lucky .card-name {
+      background: linear-gradient(90deg, #f7971e, #ffd200, #f7971e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .divider {
+      width: 48px;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #e8c97a, transparent);
+      margin: 0 auto 20px;
+    }
+
+    .message {
+      font-size: 15px;
+      line-height: 2;
+      text-align: center;
+      max-width: 320px;
+      color: #dde3f0;
+    }
+
+    .lucky .message {
+      color: #ffe89a;
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 11px;
+      color: #5a6080;
+      letter-spacing: 1px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="date" id="dateDisplay"></div>
+  <div class="title">日めくりタロット</div>
+
+  <div class="card-wrap" id="cardWrap">
+    <div class="lucky-ribbon">🌟 ラッキーデー</div>
+    <img id="cardImage" class="card-image" src="" alt="タロットカード">
+  </div>
+
+  <div class="card-name" id="cardName"></div>
+  <div class="divider"></div>
+  <div class="message" id="cardMessage"></div>
+
+  <div class="footer">毎日更新 ✦ また明日も引いてみてね</div>
+
+  <script>
+    const cards = [
+      { name: "魔術師",    image: "images/00 magician.png",         message: "あなたの中にはすでに必要なものがそろっています。自分の力を信じて、行動に移してみましょう。" },
+      { name: "愚者",      image: "images/01 the fool.png",          message: "正解かどうかより、まず一歩踏み出すことが大切。今日は思い切って新しいことを始めてみましょう。" },
+      { name: "女教皇",    image: "images/02 the highpriestess.png", message: "今日は自分の直感を大切にしてみて。頭より心の声に従うと、答えが見えてくるかもしれません。" },
+      { name: "女帝",      image: "images/03 the empress.png",       message: "今日は自分を甘やかしていい日。好きなものを食べたり、ゆっくり過ごしたり、自分を大切に。" },
+      { name: "皇帝",      image: "images/04 the emperor.png",       message: "一歩一歩着実に進める日。計画を立てて取り組むことで、確かな結果につながっていきます。" },
+      { name: "法王",      image: "images/05 the hierohant.png",     message: "先輩や経験者の言葉に耳を傾けてみて。誰かのアドバイスが、今日の大きなヒントになります。" },
+      { name: "恋人",      image: "images/06 the lovers.png",        message: "大切な選択をする日かもしれません。自分が本当に望むものを、正直に選んでみましょう。" },
+      { name: "戦車",      image: "images/07 the chariot.png",       message: "迷いを捨てて、自信を持って突き進む日。今日のあなたには、前に進む力が満ちています。" },
+      { name: "力",        image: "images/08 strength.png",          message: "焦らなくて大丈夫。どんな状況でも、それを乗り越える力がちゃんとあなたの中にあります。" },
+      { name: "隠者",      image: "images/09 the hermit.png",        message: "今日は一人の時間を大切に。ゆっくり自分と向き合うことで、本当に大切なことが見えてきます。" },
+      { name: "運命の輪",  image: "images/10 wheel of fortune.png",  message: "流れが変わり始める日。うまくいかなかったことが、好転するサインかもしれません。" },
+      { name: "正義",      image: "images/11 justice.png",           message: "正直に、誠実に過ごすことが今日のテーマ。自分に嘘をつかず、素直な気持ちを大切に。" },
+      { name: "吊られた男",image: "images/12 the hanged man.png",    message: "一度立ち止まって、違う角度から見てみて。今まで気づかなかった答えが、そこにあるかも。" },
+      { name: "死神",      image: "images/13 death.png",             message: "何かを手放すことで、新しいものが入ってくる日。変化を恐れずに受け入れてみましょう。" },
+      { name: "節制",      image: "images/14 temperance.png",        message: "無理せず、ほどよくがちょうどいい日。バランスを意識して、マイペースに過ごしましょう。" },
+      { name: "悪魔",      image: "images/15 devil.png",             message: "今日はちょっと立ち止まって考えてみて。本当に必要なものと、そうでないものを見極める日。" },
+      { name: "塔",        image: "images/16 the tower.png",         message: "予期せぬことが起きても大丈夫。それはより良い方向への変化の始まりかもしれません。" },
+      { name: "星",        image: "images/17 the star.png",          message: "うまくいかない日が続いていても、必ず光は見えてきます。今日は希望を持って過ごしてみて。" },
+      { name: "月",        image: "images/18 the moon.png",          message: "今日は判断を急がなくてOK。もう少し時間をかけると、霧が晴れるように答えが見えてきます。" },
+      { name: "太陽",      image: "images/19 the sun.png",           message: "今日は最高の一日になりそう！元気いっぱいで動くと、どんどんいいことが集まってきます。" },
+      { name: "審判",      image: "images/20 judgment.png",          message: "過去を振り返り、次のステージへ進む日。後悔より学びに変えて、前を向いていきましょう。" },
+      { name: "世界",      image: "images/21 the warld.png",         message: "一つのことが完結し、新しいステージへ進む日。ここまでの自分をしっかり褒めてあげて。" },
+      { name: "あたり",    image: "images/22 atari.png",             message: "今日は何をしても許されるラッキーデー！悩みも不安も全部忘れて、思いっきり楽しんじゃおう！", lucky: true },
+    ];
+
+    // 日付からカードを決定（毎日変わる・全ユーザー共通・日本時間基準）
+    const today = new Date();
+    const jstTime = today.getTime() + (9 * 60 * 60 * 1000); // UTC+9（日本時間）
+    const daysSinceEpoch = Math.floor(jstTime / (1000 * 60 * 60 * 24));
+    const card = cards[daysSinceEpoch % cards.length];
+
+    // 日付表示
+    const dateStr = today.toLocaleDateString('ja-JP', {
+      year: 'numeric', month: 'long', day: 'numeric', weekday: 'long'
+    });
+    document.getElementById('dateDisplay').textContent = dateStr;
+
+    // カード表示
+    document.getElementById('cardImage').src = card.image;
+    document.getElementById('cardImage').alt = card.name;
+    document.getElementById('cardName').textContent = card.name;
+    document.getElementById('cardMessage').textContent = card.message;
+
+    // あたりカード専用スタイル
+    if (card.lucky) {
+      document.getElementById('cardWrap').classList.add('lucky');
+      document.getElementById('cardName').classList.add('lucky');
+      document.getElementById('cardMessage').classList.add('lucky');
+    }
+  </script>
+</body>
+</html>

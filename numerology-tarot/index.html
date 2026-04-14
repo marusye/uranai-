@@ -1,0 +1,1400 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数秘術タロット</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Noto+Serif+JP:wght@300;400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #f0d080;
+      --deep: #0d0b1a;
+      --dark: #1a1628;
+      --card-bg: #1e1a30;
+      --purple: #6b4fa0;
+      --purple-light: #9b7fd4;
+      --text: #e8dfc8;
+      --text-dim: #8a7a6a;
+    }
+
+    body {
+      background: var(--deep);
+      color: var(--text);
+      font-family: 'Noto Serif JP', serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    /* Stars background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 50%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 10%, rgba(255,255,255,0.7) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 80%, rgba(255,255,255,0.5) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 30%, rgba(255,255,255,0.6) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 90%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 60%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 15% 65%, rgba(201,168,76,0.5) 0%, transparent 100%),
+        radial-gradient(2px 2px at 55% 45%, rgba(201,168,76,0.4) 0%, transparent 100%),
+        radial-gradient(2px 2px at 85% 15%, rgba(201,168,76,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 600px;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .title-area {
+      text-align: center;
+    }
+
+    .title-area h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: var(--gold);
+      text-shadow: 0 0 20px rgba(201,168,76,0.5);
+      letter-spacing: 0.1em;
+      margin-bottom: 0.3rem;
+    }
+
+    .title-area p {
+      color: var(--text-dim);
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+    }
+
+    .divider {
+      width: 200px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--gold), transparent);
+      margin: 0.5rem auto;
+    }
+
+    .input-section {
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.3);
+      border-radius: 16px;
+      padding: 2rem;
+      width: 100%;
+      box-shadow: 0 0 40px rgba(107,79,160,0.2);
+    }
+
+    .input-section label {
+      display: block;
+      margin-bottom: 0.8rem;
+      color: var(--gold-light);
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+    }
+
+    .date-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    input[type="date"], input[type="number"], input[type="text"] {
+      flex: 1;
+      min-width: 160px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(201,168,76,0.4);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 0.7rem 1rem;
+      outline: none;
+      transition: border-color 0.3s, box-shadow 0.3s;
+      color-scheme: dark;
+    }
+
+    input[type="date"]:focus, input[type="number"]:focus, input[type="text"]:focus {
+      border-color: var(--gold);
+      box-shadow: 0 0 12px rgba(201,168,76,0.3);
+    }
+
+    .date-row { display: flex; align-items: center; gap: 0.5rem; }
+    .date-group { display: flex; align-items: center; gap: 0.3rem; flex: 1; }
+    .date-group input { width: 100%; min-width: 0; }
+    .date-unit { font-size: 0.9rem; color: var(--dim, #888); white-space: nowrap; flex-shrink: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+    .btn {
+      background: linear-gradient(135deg, #6b4fa0, #c9a84c);
+      border: none;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.1em;
+      padding: 0.7rem 1.4rem;
+      transition: opacity 0.2s, transform 0.1s, box-shadow 0.2s;
+      box-shadow: 0 2px 12px rgba(107,79,160,0.4);
+      white-space: nowrap;
+    }
+
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 20px rgba(107,79,160,0.6); }
+    .btn:active { transform: translateY(0); }
+
+    /* Calculation steps */
+    .calc-steps {
+      width: 100%;
+      background: rgba(107,79,160,0.1);
+      border: 1px solid rgba(107,79,160,0.3);
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .calc-steps.show { display: block; }
+
+    .calc-steps .step {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 0.4rem;
+      line-height: 1.6;
+    }
+
+    .calc-steps .step:last-child { margin-bottom: 0; }
+
+    .step-arrow { color: var(--purple-light); }
+    .step-highlight { color: var(--gold-light); font-weight: 700; }
+
+    /* Result number */
+    .result-number {
+      font-family: 'Cinzel', serif;
+      font-size: 5rem;
+      font-weight: 700;
+      color: var(--gold);
+      text-shadow: 0 0 30px rgba(201,168,76,0.7);
+      line-height: 1;
+      display: none;
+      animation: popIn 0.5s cubic-bezier(0.34,1.56,0.64,1);
+    }
+
+    .result-number.show { display: block; }
+
+    /* Tarot Card */
+    .tarot-card-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      gap: 1.2rem;
+      animation: fadeSlideUp 0.6s ease 0.2s both;
+    }
+
+    .tarot-card-wrapper.show { display: flex; }
+
+    .tarot-card {
+      width: 240px;
+      background: linear-gradient(160deg, #1e1a30, #2a2040);
+      border: 2px solid var(--gold);
+      border-radius: 16px;
+      padding: 1.2rem;
+      box-shadow: 0 0 40px rgba(201,168,76,0.3), 0 0 80px rgba(107,79,160,0.2);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .tarot-card::before {
+      content: '';
+      position: absolute;
+      inset: 4px;
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      pointer-events: none;
+    }
+
+    .card-number {
+      font-family: 'Cinzel', serif;
+      font-size: 0.75rem;
+      color: var(--gold);
+      text-align: center;
+      letter-spacing: 0.15em;
+      margin-bottom: 0.5rem;
+    }
+
+    .card-svg-area {
+      width: 100%;
+      aspect-ratio: 3/4;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-svg-area svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .card-title-jp {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--gold-light);
+      text-align: center;
+      margin-top: 0.6rem;
+      letter-spacing: 0.05em;
+    }
+
+    .card-title-en {
+      font-family: 'Cinzel', serif;
+      font-size: 0.7rem;
+      color: var(--text-dim);
+      text-align: center;
+      letter-spacing: 0.12em;
+      margin-top: 0.2rem;
+    }
+
+    .card-meaning {
+      width: 100%;
+      background: var(--card-bg);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 12px;
+      padding: 1.2rem 1.5rem;
+      font-size: 0.88rem;
+      line-height: 1.8;
+      color: var(--text);
+    }
+
+    .card-meaning h3 {
+      color: var(--gold);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.5rem;
+      font-family: 'Cinzel', serif;
+    }
+
+    /* Animations */
+    @keyframes fadeIn { from { opacity:0 } to { opacity:1 } }
+    @keyframes popIn {
+      from { transform: scale(0.5); opacity:0 }
+      to   { transform: scale(1);   opacity:1 }
+    }
+    @keyframes fadeSlideUp {
+      from { transform: translateY(30px); opacity:0 }
+      to   { transform: translateY(0);    opacity:1 }
+    }
+
+    footer {
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      text-align: center;
+      padding: 2rem 0 1rem;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="title-area">
+    <h1>✦ 数秘術タロット ✦</h1>
+    <div class="divider"></div>
+    <p>生年月日から導き出されるあなたのタロット</p>
+  </div>
+
+  <div class="input-section">
+    <label>生年月日を入力してください</label>
+    <div class="date-input-wrapper">
+      <form onsubmit="calculate(); return false;" style="display:contents">
+        <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+        <button type="submit" class="btn">占う</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="calc-steps" id="calcSteps"></div>
+
+  <div class="result-number" id="resultNumber"></div>
+
+  <div class="tarot-card-wrapper" id="cardWrapper">
+    <div class="tarot-card">
+      <div class="card-number" id="cardNum"></div>
+      <div class="card-svg-area" id="cardSvg"></div>
+      <div class="card-title-jp" id="cardTitleJp"></div>
+      <div class="card-title-en" id="cardTitleEn"></div>
+    </div>
+    <div class="card-meaning" id="cardMeaning"></div>
+  </div>
+
+</div>
+
+<footer>数秘術 × タロット大アルカナ</footer>
+
+<script>
+// ─── Tarot Data ───────────────────────────────────────────────────────────────
+const CARDS = {
+  1: {
+    jp: '魔術師', en: 'THE MAGICIAN',
+    meaning: '意志と創造の力。あなたには目標を実現するすべての才能と道具が揃っています。新しい出発点に立ち、自信を持って行動することで道が開けます。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#1a1428" rx="8"/>
+      <!-- Stars -->
+      <text x="20" y="25" fill="#c9a84c" font-size="10">✦</text>
+      <text x="130" y="25" fill="#c9a84c" font-size="10">✦</text>
+      <text x="75" y="18" fill="#c9a84c" font-size="8">✦</text>
+      <!-- Infinity symbol -->
+      <path d="M55 55 Q55 45 65 45 Q75 45 80 55 Q85 65 95 65 Q105 65 105 55 Q105 45 95 45 Q85 45 80 55 Q75 65 65 65 Q55 65 55 55 Z" fill="none" stroke="#c9a84c" stroke-width="2.5"/>
+      <!-- Figure -->
+      <circle cx="80" cy="85" r="12" fill="#f0d080" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Body -->
+      <rect x="70" y="98" width="20" height="35" rx="4" fill="#6b4fa0"/>
+      <!-- Wand -->
+      <line x1="100" y1="65" x2="100" y2="130" stroke="#c9a84c" stroke-width="3"/>
+      <circle cx="100" cy="62" r="5" fill="#f0d080"/>
+      <!-- Table with tools -->
+      <rect x="30" y="140" width="100" height="8" rx="3" fill="#4a3560" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Tools on table -->
+      <circle cx="50" cy="138" r="6" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="60" y="141" fill="#c9a84c" font-size="9">✦</text>
+      <rect x="90" y="132" width="8" height="8" rx="1" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Rose border -->
+      <text x="18" y="180" fill="#9b4060" font-size="10">❀</text>
+      <text x="30" y="192" fill="#9b4060" font-size="10">❀</text>
+      <text x="110" y="180" fill="#9b4060" font-size="10">❀</text>
+      <text x="122" y="192" fill="#9b4060" font-size="10">❀</text>
+      <!-- Ground -->
+      <text x="44" y="195" fill="#4a7040" font-size="10">🌿</text>
+      <text x="90" y="195" fill="#4a7040" font-size="10">🌿</text>
+    </svg>`
+  },
+  2: {
+    jp: '女教皇', en: 'THE HIGH PRIESTESS',
+    meaning: '直感と神秘の知恵。内なる声に従い、表に出ていない真実を見極める時です。静寂の中に答えがあります。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#0d1a2a" rx="8"/>
+      <!-- Moon -->
+      <circle cx="80" cy="35" r="22" fill="none" stroke="#c9a84c" stroke-width="1.5" stroke-dasharray="4,2"/>
+      <circle cx="80" cy="35" r="16" fill="#1a2a40"/>
+      <path d="M68 28 Q80 18 92 28 Q80 22 68 28Z" fill="#c9a84c"/>
+      <!-- Pillars -->
+      <rect x="20" y="60" width="20" height="100" rx="3" fill="#1e3050" stroke="#4a6080" stroke-width="1"/>
+      <rect x="120" y="60" width="20" height="100" rx="3" fill="#1e3050" stroke="#4a6080" stroke-width="1"/>
+      <text x="25" y="75" fill="#c9a84c" font-size="10" font-weight="bold">B</text>
+      <text x="125" y="75" fill="#f0f0f0" font-size="10" font-weight="bold">J</text>
+      <!-- Veil -->
+      <path d="M40 70 Q80 80 120 70 L120 160 Q80 170 40 160 Z" fill="rgba(30,50,80,0.8)" stroke="rgba(200,180,100,0.3)" stroke-width="1"/>
+      <!-- Pomegranates on veil -->
+      <circle cx="60" cy="100" r="5" fill="#8b1a30"/>
+      <circle cx="80" cy="110" r="5" fill="#8b1a30"/>
+      <circle cx="100" cy="100" r="5" fill="#8b1a30"/>
+      <!-- Figure -->
+      <circle cx="80" cy="78" r="11" fill="#e8d8c0" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Crown -->
+      <path d="M69 70 L69 64 L74 68 L80 62 L86 68 L91 64 L91 70 Z" fill="#c9a84c"/>
+      <!-- Robe -->
+      <path d="M66 90 Q80 95 94 90 L98 160 L62 160 Z" fill="#2a4060"/>
+      <!-- Scroll -->
+      <rect x="68" y="108" width="24" height="30" rx="3" fill="#d4c080" stroke="#a08040" stroke-width="1"/>
+      <text x="72" y="122" fill="#6a4010" font-size="7">TORA</text>
+      <text x="72" y="132" fill="#6a4010" font-size="7">H</text>
+      <!-- Stars -->
+      <text x="15" y="50" fill="#c9a84c" font-size="8">✦</text>
+      <text x="135" y="50" fill="#c9a84c" font-size="8">✦</text>
+    </svg>`
+  },
+  3: {
+    jp: '女帝', en: 'THE EMPRESS',
+    meaning: '豊かさと創造性の女神。愛、美、豊饒の力があなたを包んでいます。自然との調和の中で新しい命が育まれます。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#1a2810" rx="8"/>
+      <!-- Nature background -->
+      <ellipse cx="80" cy="170" rx="65" ry="40" fill="#2a4018"/>
+      <!-- Trees -->
+      <rect x="20" y="120" width="6" height="50" fill="#4a3010"/>
+      <ellipse cx="23" cy="115" rx="15" ry="20" fill="#3a5828"/>
+      <rect x="130" y="120" width="6" height="50" fill="#4a3010"/>
+      <ellipse cx="133" cy="115" rx="15" ry="20" fill="#3a5828"/>
+      <!-- Crown -->
+      <path d="M55 52 L58 42 L64 50 L72 38 L80 32 L88 38 L96 50 L102 42 L105 52 L55 52Z" fill="#c9a84c"/>
+      <!-- Stars on crown -->
+      <text x="70" y="50" fill="#fff" font-size="6">★★★</text>
+      <!-- Figure sitting -->
+      <circle cx="80" cy="68" r="13" fill="#f0d0a0" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Hair -->
+      <path d="M67 66 Q80 58 93 66" fill="#c8a060" stroke="none"/>
+      <!-- Throne/cushion -->
+      <path d="M50 85 Q80 90 110 85 L112 150 L48 150 Z" fill="#d4802a" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Robe -->
+      <path d="M58 82 Q80 88 102 82 L106 150 L54 150 Z" fill="#c04860" stroke="none" opacity="0.9"/>
+      <!-- Venus symbol -->
+      <circle cx="80" cy="120" r="10" fill="none" stroke="#f0d080" stroke-width="2"/>
+      <line x1="80" y1="130" x2="80" y2="142" stroke="#f0d080" stroke-width="2"/>
+      <line x1="74" y1="137" x2="86" y2="137" stroke="#f0d080" stroke-width="2"/>
+      <!-- Flowers -->
+      <text x="25" y="165" fill="#e06080" font-size="12">✿</text>
+      <text x="45" y="172" fill="#e080a0" font-size="10">✿</text>
+      <text x="95" y="165" fill="#e06080" font-size="12">✿</text>
+      <text x="115" y="172" fill="#e080a0" font-size="10">✿</text>
+      <!-- Wheat -->
+      <text x="60" y="185" fill="#c9a84c" font-size="10">🌾</text>
+      <text x="85" y="185" fill="#c9a84c" font-size="10">🌾</text>
+    </svg>`
+  },
+  4: {
+    jp: '皇帝', en: 'THE EMPEROR',
+    meaning: '権威と秩序の支配者。強いリーダーシップと論理的思考で物事を構築する力があります。安定した基盤を築く時です。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#200808" rx="8"/>
+      <!-- Mountain background -->
+      <polygon points="0,150 40,80 80,100 120,70 160,140 160,210 0,210" fill="#2a1010"/>
+      <!-- Throne -->
+      <rect x="35" y="85" width="90" height="110" rx="4" fill="#3a1a08" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Ram heads on throne -->
+      <ellipse cx="45" cy="92" rx="10" ry="8" fill="#6a3010" stroke="#c9a84c" stroke-width="1"/>
+      <text x="40" y="97" fill="#c9a84c" font-size="8">♈</text>
+      <ellipse cx="115" cy="92" rx="10" ry="8" fill="#6a3010" stroke="#c9a84c" stroke-width="1"/>
+      <text x="110" y="97" fill="#c9a84c" font-size="8">♈</text>
+      <!-- Crown -->
+      <path d="M60 55 L63 43 L70 52 L80 40 L90 52 L97 43 L100 55 Z" fill="#c9a84c"/>
+      <circle cx="80" cy="42" r="4" fill="#e05050"/>
+      <!-- Figure head -->
+      <circle cx="80" cy="70" r="13" fill="#d4a870" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Beard -->
+      <path d="M70 78 Q80 88 90 78" fill="#c8a860" stroke="none"/>
+      <!-- Robe/armour -->
+      <rect x="55" y="84" width="50" height="60" rx="3" fill="#c04020" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Scepter (ankh) -->
+      <line x1="115" y1="60" x2="115" y2="140" stroke="#c9a84c" stroke-width="3"/>
+      <circle cx="115" cy="68" r="7" fill="none" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="108" y1="76" x2="122" y2="76" stroke="#c9a84c" stroke-width="2"/>
+      <!-- Orb -->
+      <circle cx="50" cy="100" r="10" fill="none" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="44" y1="100" x2="56" y2="100" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="50" y1="94" x2="50" y2="106" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Legs -->
+      <rect x="62" y="145" width="16" height="30" rx="2" fill="#802010"/>
+      <rect x="82" y="145" width="16" height="30" rx="2" fill="#802010"/>
+      <!-- Border decorations -->
+      <text x="12" y="30" fill="#c9a84c" font-size="12">♈</text>
+      <text x="125" y="30" fill="#c9a84c" font-size="12">♈</text>
+    </svg>`
+  },
+  5: {
+    jp: '法王', en: 'THE HIEROPHANT',
+    meaning: '伝統と精神的な導き。師や制度から学ぶことで真の知恵を得ます。確立された価値観に従い、精神的な成長を目指しましょう。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#0d0a20" rx="8"/>
+      <!-- Pillars -->
+      <rect x="15" y="55" width="18" height="130" rx="3" fill="#1a1838" stroke="#5a5878" stroke-width="1"/>
+      <rect x="127" y="55" width="18" height="130" rx="3" fill="#1a1838" stroke="#5a5878" stroke-width="1"/>
+      <!-- Triple cross crown -->
+      <rect x="72" y="30" width="16" height="40" rx="2" fill="#c9a84c"/>
+      <rect x="63" y="38" width="34" height="6" rx="2" fill="#c9a84c"/>
+      <rect x="66" y="48" width="28" height="6" rx="2" fill="#c9a84c"/>
+      <rect x="69" y="58" width="22" height="6" rx="2" fill="#c9a84c"/>
+      <!-- Figure head -->
+      <circle cx="80" cy="80" r="13" fill="#d4a870" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Robe -->
+      <path d="M50 94 Q80 100 110 94 L114 180 L46 180 Z" fill="#9b2040"/>
+      <!-- Gold overlay -->
+      <path d="M62 94 Q80 98 98 94 L100 180 L60 180 Z" fill="#c9a84c" opacity="0.8"/>
+      <!-- Stole -->
+      <path d="M70 94 L66 180" stroke="#f0d080" stroke-width="3"/>
+      <path d="M90 94 L94 180" stroke="#f0d080" stroke-width="3"/>
+      <!-- Scepter with cross -->
+      <line x1="110" y1="70" x2="110" y2="165" stroke="#c9a84c" stroke-width="3"/>
+      <line x1="103" y1="85" x2="117" y2="85" stroke="#c9a84c" stroke-width="3"/>
+      <line x1="104" y1="96" x2="116" y2="96" stroke="#c9a84c" stroke-width="2"/>
+      <!-- Two keys -->
+      <line x1="55" y1="155" x2="75" y2="185" stroke="#c9a84c" stroke-width="2"/>
+      <circle cx="55" cy="153" r="5" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="85" y1="155" x2="65" y2="185" stroke="#f0f0f0" stroke-width="2"/>
+      <circle cx="85" cy="153" r="5" fill="none" stroke="#f0f0f0" stroke-width="1.5"/>
+      <!-- Two monks below -->
+      <circle cx="50" cy="190" r="7" fill="#5a2050"/>
+      <circle cx="110" cy="190" r="7" fill="#2050a0"/>
+      <!-- Stars -->
+      <text x="26" y="48" fill="#c9a84c" font-size="8">✦</text>
+      <text x="128" y="48" fill="#c9a84c" font-size="8">✦</text>
+    </svg>`
+  },
+  6: {
+    jp: '恋人', en: 'THE LOVERS',
+    meaning: '愛と選択の岐路。心からの繋がりと大切な選択が訪れます。真実の愛と価値観に従って選択することが大切です。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#100820" rx="8"/>
+      <!-- Sun -->
+      <circle cx="80" cy="35" r="20" fill="#f0b030"/>
+      <circle cx="80" cy="35" r="15" fill="#f8d060"/>
+      <!-- Sun rays -->
+      <line x1="80" y1="10" x2="80" y2="4" stroke="#f0b030" stroke-width="2"/>
+      <line x1="80" y1="60" x2="80" y2="66" stroke="#f0b030" stroke-width="2"/>
+      <line x1="55" y1="35" x2="49" y2="35" stroke="#f0b030" stroke-width="2"/>
+      <line x1="105" y1="35" x2="111" y2="35" stroke="#f0b030" stroke-width="2"/>
+      <line x1="62" y1="17" x2="58" y2="13" stroke="#f0b030" stroke-width="2"/>
+      <line x1="98" y1="17" x2="102" y2="13" stroke="#f0b030" stroke-width="2"/>
+      <!-- Angel Raphael -->
+      <circle cx="80" cy="70" r="10" fill="#f8d080"/>
+      <!-- Wings -->
+      <path d="M70 70 Q55 60 50 75 Q60 80 70 75 Z" fill="#f0b030" opacity="0.9"/>
+      <path d="M90 70 Q105 60 110 75 Q100 80 90 75 Z" fill="#f0b030" opacity="0.9"/>
+      <!-- Angel robe -->
+      <path d="M72 80 Q80 85 88 80 L86 100 L74 100 Z" fill="#9b40c0" opacity="0.9"/>
+      <!-- Cloud -->
+      <ellipse cx="80" cy="92" rx="30" ry="8" fill="rgba(255,255,255,0.15)"/>
+      <!-- Male figure (right) -->
+      <circle cx="105" cy="115" r="10" fill="#d4a870"/>
+      <rect x="95" y="126" width="20" height="40" rx="3" fill="#6a4010" opacity="0.8"/>
+      <!-- Female figure (left) -->
+      <circle cx="55" cy="115" r="10" fill="#f0c080"/>
+      <!-- Hair -->
+      <path d="M48 112 Q55 105 62 112" fill="#8b4010"/>
+      <rect x="45" y="126" width="20" height="40" rx="3" fill="#800020" opacity="0.8"/>
+      <!-- Apple tree (right) -->
+      <rect x="118" y="140" width="5" height="40" fill="#4a2808"/>
+      <ellipse cx="120" cy="135" rx="15" ry="18" fill="#2a5010"/>
+      <text x="112" y="138" fill="#c03028" font-size="9">●</text>
+      <!-- Mountain (center) -->
+      <polygon points="70,180 80,150 90,180" fill="#503828"/>
+      <!-- Fire tree (left) -->
+      <rect x="37" y="155" width="5" height="25" fill="#4a2808"/>
+      <polygon points="28,155 40,120 52,155" fill="#c84010"/>
+    </svg>`
+  },
+  7: {
+    jp: '戦車', en: 'THE CHARIOT',
+    meaning: '意志と勝利の前進。強い決意と自制心で障害を乗り越えます。対立する力をコントロールし、目標へ突き進みましょう。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#101828" rx="8"/>
+      <!-- City background -->
+      <rect x="0" y="140" width="160" height="70" fill="#0a1020"/>
+      <rect x="10" y="110" width="20" height="35" fill="#1a2838"/>
+      <rect x="40" y="100" width="15" height="45" fill="#1a2838"/>
+      <rect x="110" y="105" width="20" height="40" fill="#1a2838"/>
+      <!-- Stars -->
+      <text x="20" y="25" fill="#c9a84c" font-size="8">✦</text>
+      <text x="80" y="20" fill="#c9a84c" font-size="8">✦</text>
+      <text x="135" y="25" fill="#c9a84c" font-size="8">✦</text>
+      <!-- Canopy with stars -->
+      <rect x="28" y="50" width="104" height="70" rx="4" fill="#1e3050" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="38" y="68" fill="#c9a84c" font-size="8">✦ ✦ ✦ ✦ ✦</text>
+      <text x="42" y="80" fill="#c9a84c" font-size="8">✦ ✦ ✦ ✦</text>
+      <!-- Crown with star -->
+      <path d="M65 52 L68 44 L80 52 L92 44 L95 52 Z" fill="#c9a84c"/>
+      <text x="74" y="52" fill="#c9a84c" font-size="8">★</text>
+      <!-- Figure -->
+      <circle cx="80" cy="65" r="11" fill="#d4a870" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Armour -->
+      <rect x="62" y="77" width="36" height="40" rx="3" fill="#5a6070" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Scepter -->
+      <line x1="105" y1="55" x2="105" y2="118" stroke="#c9a84c" stroke-width="3"/>
+      <circle cx="105" cy="52" r="4" fill="#f0d080"/>
+      <!-- Shield -->
+      <path d="M35 80 L35 110 Q35 118 45 118 Q55 118 55 110 L55 80 Z" fill="#3a4050" stroke="#c9a84c" stroke-width="1.5"/>
+      <text x="41" y="103" fill="#c9a84c" font-size="14">⊕</text>
+      <!-- Chariot body -->
+      <rect x="20" y="118" width="120" height="30" rx="4" fill="#2a3040" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Wheel left -->
+      <circle cx="40" cy="155" r="18" fill="none" stroke="#c9a84c" stroke-width="2"/>
+      <circle cx="40" cy="155" r="4" fill="#c9a84c"/>
+      <line x1="40" y1="137" x2="40" y2="173" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="22" y1="155" x2="58" y2="155" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Wheel right -->
+      <circle cx="120" cy="155" r="18" fill="none" stroke="#c9a84c" stroke-width="2"/>
+      <circle cx="120" cy="155" r="4" fill="#c9a84c"/>
+      <line x1="120" y1="137" x2="120" y2="173" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="102" y1="155" x2="138" y2="155" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Sphinxes -->
+      <ellipse cx="50" cy="180" rx="20" ry="10" fill="#3a3028"/>
+      <circle cx="38" cy="173" r="8" fill="#c8a060"/>
+      <ellipse cx="110" cy="180" rx="20" ry="10" fill="#1a1a28"/>
+      <circle cx="122" cy="173" r="8" fill="#e8e8e8"/>
+    </svg>`
+  },
+  8: {
+    jp: '力', en: 'STRENGTH',
+    meaning: '内なる強さと慈愛。力ずくではなく、優しさと精神的な力で困難を乗り越えます。自分を信頼し、穏やかに前進しましょう。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#181008" rx="8"/>
+      <!-- Nature background -->
+      <ellipse cx="80" cy="200" rx="80" ry="50" fill="#2a3010"/>
+      <!-- Mountains -->
+      <polygon points="0,130 40,80 80,120 120,70 160,120 160,200 0,200" fill="#1a2008"/>
+      <!-- Infinity above head -->
+      <path d="M55 45 Q55 35 65 35 Q75 35 80 45 Q85 55 95 55 Q105 55 105 45 Q105 35 95 35 Q85 35 80 45 Q75 55 65 55 Q55 55 55 45 Z" fill="none" stroke="#c9a84c" stroke-width="2.5"/>
+      <!-- Flower crown -->
+      <text x="58" y="65" fill="#e06080" font-size="12">❀❀❀</text>
+      <!-- Woman figure -->
+      <circle cx="80" cy="78" r="12" fill="#f0c890"/>
+      <!-- White robe -->
+      <path d="M55 91 Q80 97 105 91 L108 175 L52 175 Z" fill="#f0f0f0"/>
+      <!-- Belt of flowers -->
+      <text x="58" y="122" fill="#e06080" font-size="8">❀❀❀❀❀</text>
+      <!-- Lion -->
+      <ellipse cx="80" cy="175" rx="55" ry="30" fill="#b07820"/>
+      <!-- Lion head -->
+      <circle cx="105" cy="150" r="22" fill="#c08828"/>
+      <!-- Mane -->
+      <circle cx="105" cy="150" r="28" fill="none" stroke="#8a5a10" stroke-width="8" stroke-dasharray="3,2"/>
+      <!-- Lion face -->
+      <circle cx="98" cy="147" r="3" fill="#1a1008"/>
+      <circle cx="112" cy="147" r="3" fill="#1a1008"/>
+      <path d="M100 158 Q105 163 110 158" fill="none" stroke="#8a4010" stroke-width="2"/>
+      <!-- Woman petting lion -->
+      <path d="M75 115 Q90 130 100 140" fill="none" stroke="#f0c890" stroke-width="4"/>
+      <!-- Flowers on ground -->
+      <text x="15" y="185" fill="#e06080" font-size="10">❀</text>
+      <text x="35" y="195" fill="#e0a040" font-size="10">❀</text>
+    </svg>`
+  },
+  9: {
+    jp: '隠者', en: 'THE HERMIT',
+    meaning: '孤独と内省の旅。一人で内なる光を求め、魂の深みへと降りていく時です。静かな洞察から真の知恵が生まれます。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080808" rx="8"/>
+      <!-- Mountains -->
+      <polygon points="0,90 50,30 100,70 160,20 160,210 0,210" fill="#101010"/>
+      <polygon points="0,120 60,60 120,90 160,50 160,210 0,210" fill="#181818"/>
+      <!-- Snow caps -->
+      <polygon points="30,40 50,30 70,45" fill="#e0e0e8"/>
+      <polygon points="100,35 120,22 140,38" fill="#e0e0e8"/>
+      <!-- Stars -->
+      <text x="25" y="25" fill="#c9a84c" font-size="8">✦</text>
+      <text x="55" y="15" fill="#c9a84c" font-size="6">·</text>
+      <text x="100" y="20" fill="#c9a84c" font-size="6">·</text>
+      <text x="135" y="30" fill="#c9a84c" font-size="8">✦</text>
+      <!-- Figure -->
+      <circle cx="80" cy="90" r="12" fill="#c0a878" stroke="none"/>
+      <!-- Cloak -->
+      <path d="M60 103 Q80 108 100 103 L105 175 L55 175 Z" fill="#3a3838"/>
+      <!-- Hood -->
+      <path d="M68 88 Q80 78 92 88 Q88 100 80 103 Q72 100 68 88 Z" fill="#3a3838"/>
+      <!-- Beard -->
+      <path d="M72 98 Q80 106 88 98" fill="#8a7850"/>
+      <!-- Staff -->
+      <line x1="48" y1="80" x2="58" y2="180" stroke="#5a4010" stroke-width="4"/>
+      <!-- Lantern -->
+      <rect x="98" y="88" width="16" height="22" rx="3" fill="#2a2010" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Light from lantern -->
+      <circle cx="106" cy="99" r="6" fill="#f0c030" opacity="0.9"/>
+      <circle cx="106" cy="99" r="10" fill="#f0c030" opacity="0.3"/>
+      <circle cx="106" cy="99" r="16" fill="#f0c030" opacity="0.1"/>
+      <!-- Star of David in lantern -->
+      <text x="100" y="102" fill="#c9a84c" font-size="10">✡</text>
+      <!-- Light beam -->
+      <path d="M106 111 L85 140 L127 140 Z" fill="#f0c030" opacity="0.15"/>
+    </svg>`
+  },
+  10: {
+    jp: '運命の輪', en: 'WHEEL OF FORTUNE',
+    meaning: '運命の転換点。サイクルの変化が訪れます。上昇と下降を繰り返しながら、宇宙の法則に従い新しい局面へと向かいます。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#100818" rx="8"/>
+      <!-- Corner creatures -->
+      <text x="8" y="28" fill="#c9a84c" font-size="14">👼</text>
+      <text x="125" y="28" fill="#c9a84c" font-size="14">🦅</text>
+      <text x="8" y="195" fill="#c9a84c" font-size="14">🐂</text>
+      <text x="125" y="195" fill="#c9a84c" font-size="14">🦁</text>
+      <!-- Books in corners -->
+      <rect x="14" y="18" width="10" height="12" rx="1" fill="#2a2060" stroke="#c9a84c" stroke-width="0.5"/>
+      <rect x="134" y="18" width="10" height="12" rx="1" fill="#2a2060" stroke="#c9a84c" stroke-width="0.5"/>
+      <!-- Outer wheel -->
+      <circle cx="80" cy="105" r="65" fill="none" stroke="#c9a84c" stroke-width="2"/>
+      <!-- Middle ring -->
+      <circle cx="80" cy="105" r="50" fill="none" stroke="#6b4fa0" stroke-width="1.5"/>
+      <!-- Inner ring -->
+      <circle cx="80" cy="105" r="30" fill="#1a1030" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Center -->
+      <circle cx="80" cy="105" r="8" fill="#c9a84c"/>
+      <!-- Wheel spokes -->
+      <line x1="80" y1="40" x2="80" y2="75" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="80" y1="135" x2="80" y2="170" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="15" y1="105" x2="50" y2="105" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="110" y1="105" x2="145" y2="105" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="34" y1="59" x2="58" y2="83" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="102" y1="127" x2="126" y2="151" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="126" y1="59" x2="102" y2="83" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="58" y1="127" x2="34" y2="151" stroke="#c9a84c" stroke-width="2"/>
+      <!-- Hebrew letters on outer ring -->
+      <text x="72" y="46" fill="#c9a84c" font-size="9">T</text>
+      <text x="126" y="110" fill="#c9a84c" font-size="9">A</text>
+      <text x="72" y="172" fill="#c9a84c" font-size="9">R</text>
+      <text x="20" y="110" fill="#c9a84c" font-size="9">O</text>
+      <!-- Serpent (descending) -->
+      <path d="M130 65 Q145 80 135 105 Q125 125 135 145" fill="none" stroke="#2080a0" stroke-width="3"/>
+      <text x="131" y="152" fill="#2080a0" font-size="8">▼</text>
+      <!-- Anubis (ascending) -->
+      <text x="15" y="145" fill="#c9a84c" font-size="20">𓀀</text>
+      <!-- Sphinx on top -->
+      <ellipse cx="80" cy="42" rx="16" ry="8" fill="#c9a84c"/>
+      <circle cx="80" cy="35" r="8" fill="#c9a84c"/>
+      <text x="75" y="39" fill="#1a1030" font-size="6">⚡</text>
+      <!-- Sword -->
+      <line x1="140" y1="75" x2="140" y2="115" stroke="#d0d0e0" stroke-width="2"/>
+      <line x1="134" y1="82" x2="146" y2="82" stroke="#d0d0e0" stroke-width="2"/>
+    </svg>`
+  },
+  11: {
+    jp: '正義', en: 'JUSTICE',
+    meaning: '公正と真実の判断。行動には必ず結果が伴います。客観的な目で物事を見つめ、正直で公平な選択をすることが求められます。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#0a1020" rx="8"/>
+      <!-- Pillars -->
+      <rect x="12" y="50" width="18" height="140" rx="3" fill="#1a2030" stroke="#5a6080" stroke-width="1"/>
+      <rect x="130" y="50" width="18" height="140" rx="3" fill="#1a2030" stroke="#5a6080" stroke-width="1"/>
+      <!-- Arch top -->
+      <path d="M30 50 Q80 20 130 50" fill="none" stroke="#c9a84c" stroke-width="2"/>
+      <!-- Crown -->
+      <path d="M62 55 L66 45 L74 53 L80 45 L86 53 L94 45 L98 55 Z" fill="#c9a84c"/>
+      <rect x="68" y="53" width="24" height="6" rx="1" fill="#c9a84c"/>
+      <!-- Figure -->
+      <circle cx="80" cy="75" r="12" fill="#d4a870" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Robe -->
+      <path d="M50 88 Q80 94 110 88 L112 175 L48 175 Z" fill="#c03020" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Purple mantle -->
+      <path d="M58 88 Q80 92 102 88 L100 150 L60 150 Z" fill="#6b2080" opacity="0.8"/>
+      <!-- Sword (upright) -->
+      <line x1="110" y1="55" x2="110" y2="160" stroke="#d0d0e0" stroke-width="3"/>
+      <line x1="100" y1="78" x2="120" y2="78" stroke="#d0d0e0" stroke-width="3"/>
+      <circle cx="110" cy="55" r="5" fill="#d0d0e0"/>
+      <!-- Scales -->
+      <line x1="40" y1="80" x2="80" y2="70" stroke="#c9a84c" stroke-width="2"/>
+      <line x1="80" y1="70" x2="80" y2="65" stroke="#c9a84c" stroke-width="2"/>
+      <circle cx="80" cy="63" r="3" fill="#c9a84c"/>
+      <!-- Left pan -->
+      <path d="M25 90 Q40 95 55 90" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="25" y1="90" x2="30" y2="80" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="55" y1="90" x2="50" y2="80" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Right pan -->
+      <path d="M25 95 Q40 100 55 95" fill="none" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="25" y1="95" x2="30" y2="80" stroke="#c9a84c" stroke-width="1.5"/>
+      <line x1="55" y1="95" x2="50" y2="80" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Curtain behind -->
+      <rect x="30" y="52" width="100" height="125" rx="2" fill="rgba(180,140,30,0.15)" stroke="none"/>
+      <!-- Veil -->
+      <path d="M58 175 Q80 165 102 175 L102 190 L58 190 Z" fill="#c9a84c" opacity="0.7"/>
+    </svg>`
+  },
+  12: {
+    jp: '吊るされた男', en: 'THE HANGED MAN',
+    meaning: '自己犠牲と新しい視点。自ら進んで停止することで、全く新しい視点と洞察が得られます。手放すことで得られる悟りがあります。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080818" rx="8"/>
+      <!-- T-shaped scaffold -->
+      <rect x="45" y="25" width="70" height="10" rx="3" fill="#4a3010"/>
+      <rect x="73" y="35" width="14" height="70" rx="3" fill="#4a3010"/>
+      <!-- Rope -->
+      <line x1="80" y1="35" x2="80" y2="58" stroke="#8a6030" stroke-width="2.5"/>
+      <!-- Figure (upside down) -->
+      <!-- Feet (at top, tied) -->
+      <circle cx="80" cy="62" r="8" fill="#d4a870"/>
+      <path d="M72 62 Q80 56 88 62" fill="#8a5020" stroke="none"/>
+      <!-- Rope at ankle -->
+      <path d="M74 58 Q80 55 86 58" fill="none" stroke="#8a6030" stroke-width="2"/>
+      <!-- Leg crossing (right knee bent) -->
+      <line x1="80" y1="70" x2="80" y2="95" stroke="#3a6080" stroke-width="8"/>
+      <line x1="80" y1="95" x2="95" y2="80" stroke="#3a6080" stroke-width="8"/>
+      <!-- Body -->
+      <rect x="68" y="95" width="24" height="35" rx="5" fill="#c04020"/>
+      <!-- Arms spread -->
+      <line x1="68" y1="108" x2="42" y2="125" stroke="#d4a870" stroke-width="6"/>
+      <line x1="92" y1="108" x2="118" y2="125" stroke="#d4a870" stroke-width="6"/>
+      <!-- Halo/light around head -->
+      <circle cx="80" cy="142" r="16" fill="none" stroke="#f0d030" stroke-width="2"/>
+      <circle cx="80" cy="142" r="12" fill="#f8d060" opacity="0.4"/>
+      <!-- Head (at bottom) -->
+      <circle cx="80" cy="142" r="11" fill="#d4a870"/>
+      <!-- Hair hanging down -->
+      <path d="M74 153 Q80 162 86 153" fill="#8a4010"/>
+      <!-- Diagonal lines -->
+      <line x1="30" y1="20" x2="35" y2="30" stroke="#4a3010" stroke-width="4"/>
+      <line x1="125" y1="20" x2="120" y2="30" stroke="#4a3010" stroke-width="4"/>
+    </svg>`
+  },
+  13: {
+    jp: '死神', en: 'DEATH',
+    meaning: '終わりと変容。何かが完全に終わりを告げ、新しい始まりへの扉が開きます。変化を恐れず、古いものを手放しましょう。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#050510" rx="8"/>
+      <!-- Dark sky with rising sun -->
+      <circle cx="80" cy="175" r="25" fill="#c04010" opacity="0.8"/>
+      <!-- Two towers in background -->
+      <rect x="22" y="110" width="20" height="70" rx="2" fill="#181828"/>
+      <rect x="118" y="110" width="20" height="70" rx="2" fill="#181828"/>
+      <path d="M22 110 L32 95 L42 110 Z" fill="#181828"/>
+      <path d="M118 110 L128 95 L138 110 Z" fill="#181828"/>
+      <!-- River -->
+      <path d="M0 155 Q40 145 80 155 Q120 165 160 155 L160 210 L0 210 Z" fill="#0a1838"/>
+      <!-- Ground -->
+      <rect x="0" y="150" width="160" height="10" fill="#1a1010"/>
+      <!-- Black horse -->
+      <ellipse cx="85" cy="130" rx="40" ry="22" fill="#1a1a1a"/>
+      <!-- Horse head -->
+      <ellipse cx="118" cy="115" rx="16" ry="14" fill="#1a1a1a"/>
+      <!-- Horse eye -->
+      <circle cx="124" cy="112" r="3" fill="#c04010"/>
+      <!-- Horse legs -->
+      <rect x="55" y="148" width="8" height="20" rx="3" fill="#1a1a1a"/>
+      <rect x="72" y="152" width="8" height="18" rx="3" fill="#1a1a1a"/>
+      <rect x="92" y="152" width="8" height="18" rx="3" fill="#1a1a1a"/>
+      <rect x="108" y="148" width="8" height="20" rx="3" fill="#1a1a1a"/>
+      <!-- Skeleton Death figure on horse -->
+      <circle cx="75" cy="85" r="11" fill="#e8e8d8"/>
+      <text x="69" y="93" fill="#1a1010" font-size="10">☠</text>
+      <!-- Black armor/cloak -->
+      <path d="M55 97 Q75 103 95 97 L98 148 L52 148 Z" fill="#0a0a0a"/>
+      <!-- White banner with rose -->
+      <line x1="95" y1="78" x2="95" y2="150" stroke="#d0d0d0" stroke-width="2"/>
+      <rect x="95" y="78" width="35" height="28" rx="2" fill="#e8e8e8"/>
+      <text x="104" y="97" fill="#1a1010" font-size="16">✿</text>
+      <!-- Fallen king -->
+      <circle cx="35" cy="147" r="8" fill="#d4a870"/>
+      <path d="M28 155 L42 155 L42 165 L28 165 Z" fill="#c9a84c" opacity="0.7"/>
+      <!-- Praying child -->
+      <circle cx="65" cy="148" r="6" fill="#f0c890"/>
+      <!-- Standing bishop -->
+      <circle cx="110" cy="138" r="7" fill="#d4a870"/>
+      <path d="M103 145 L117 145 L115 160 L105 160 Z" fill="#f0f0f0"/>
+      <!-- Horizon sun -->
+      <text x="68" y="180" fill="#c04010" font-size="10">☀</text>
+    </svg>`
+  },
+  14: {
+    jp: '節制', en: 'TEMPERANCE',
+    meaning: 'バランスと調和の流れ。対立するものを巧みに調和させる力があります。忍耐を持ち、中庸の道を歩むことで理想が実現します。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080a18" rx="8"/>
+      <!-- Sky gradient -->
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stop-color="#100820"/>
+          <stop offset="100%" stop-color="#2060a0"/>
+        </linearGradient>
+      </defs>
+      <rect width="160" height="130" fill="url(#sky)"/>
+      <!-- Sun rising on horizon -->
+      <circle cx="80" cy="128" r="18" fill="#f0c030"/>
+      <!-- Sun rays -->
+      <line x1="80" y1="108" x2="80" y2="102" stroke="#f0c030" stroke-width="2"/>
+      <line x1="62" y1="115" x2="58" y2="110" stroke="#f0c030" stroke-width="2"/>
+      <line x1="98" y1="115" x2="102" y2="110" stroke="#f0c030" stroke-width="2"/>
+      <!-- Path to sun -->
+      <path d="M40 170 Q80 155 120 170 L120 210 L40 210 Z" fill="#3a4020"/>
+      <path d="M55 165 Q80 152 105 165" fill="none" stroke="#c9a84c" stroke-width="2" stroke-dasharray="4,3"/>
+      <!-- Iris flowers -->
+      <text x="18" y="185" fill="#6040c0" font-size="12">⚜</text>
+      <text x="32" y="195" fill="#6040c0" font-size="12">⚜</text>
+      <text x="108" y="185" fill="#6040c0" font-size="12">⚜</text>
+      <text x="122" y="195" fill="#6040c0" font-size="12">⚜</text>
+      <!-- Pool/water at bottom -->
+      <ellipse cx="55" cy="175" rx="30" ry="12" fill="#1a3060" opacity="0.8"/>
+      <!-- Angel figure -->
+      <circle cx="80" cy="72" r="12" fill="#f0d0a0" stroke="#c9a84c" stroke-width="1"/>
+      <!-- Wings -->
+      <path d="M68 78 Q45 60 42 82 Q52 90 68 85 Z" fill="#f0b030" opacity="0.9"/>
+      <path d="M92 78 Q115 60 118 82 Q108 90 92 85 Z" fill="#f0b030" opacity="0.9"/>
+      <!-- White robe -->
+      <path d="M55 85 Q80 91 105 85 L108 155 L52 155 Z" fill="#f0f0f0"/>
+      <!-- Triangle on chest -->
+      <path d="M74 100 L80 112 L86 100 Z" fill="#c9a84c"/>
+      <line x1="71" y1="106" x2="89" y2="106" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Two cups with water flowing -->
+      <rect x="45" y="105" width="22" height="30" rx="4" fill="#2040a0" stroke="#80a0c0" stroke-width="1.5"/>
+      <rect x="93" y="105" width="22" height="30" rx="4" fill="#f0c040" stroke="#c9a84c" stroke-width="1.5"/>
+      <!-- Water arc between cups -->
+      <path d="M67 112 Q80 95 93 112" fill="none" stroke="#60a0e0" stroke-width="2.5"/>
+    </svg>`
+  },
+  15: {
+    jp: '悪魔', en: 'THE DEVIL',
+    meaning: '束縛と物質的執着。恐れや欲望に縛られている状況。しかしその鎖は思ったより緩く、自らの意志で解放できることに気づいてください。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080000" rx="8"/>
+      <!-- Dark atmosphere -->
+      <circle cx="80" cy="95" r="70" fill="#1a0808" opacity="0.8"/>
+      <!-- Inverted pentagram -->
+      <path d="M80 38 L93 78 L135 78 L103 103 L115 143 L80 118 L45 143 L57 103 L25 78 L67 78 Z" fill="none" stroke="#c02010" stroke-width="1.5" opacity="0.6"/>
+      <!-- Devil figure - Baphomet -->
+      <!-- Bat wings -->
+      <path d="M55 90 Q20 70 15 95 Q20 115 55 110 Z" fill="#2a0808"/>
+      <path d="M105 90 Q140 70 145 95 Q140 115 105 110 Z" fill="#2a0808"/>
+      <!-- Body -->
+      <ellipse cx="80" cy="110" rx="30" ry="35" fill="#1a0808" stroke="#601010" stroke-width="1"/>
+      <!-- Head -->
+      <circle cx="80" cy="72" r="18" fill="#2a1010"/>
+      <!-- Horns -->
+      <path d="M68 60 L60 40 L72 55 Z" fill="#601010"/>
+      <path d="M92 60 L100 40 L88 55 Z" fill="#601010"/>
+      <!-- Goat face -->
+      <text x="73" y="80" fill="#601010" font-size="14">𓂀</text>
+      <!-- Inverted torch -->
+      <line x1="80" y1="60" x2="80" y2="50" stroke="#c04010" stroke-width="3"/>
+      <ellipse cx="80" cy="48" rx="6" ry="4" fill="#f06010"/>
+      <!-- Two chained humans (smaller, below) -->
+      <circle cx="50" cy="162" r="8" fill="#d4a870"/>
+      <path d="M44 170 L56 170 L56 185 L44 185 Z" fill="#4a2010"/>
+      <circle cx="110" cy="162" r="8" fill="#c09070"/>
+      <path d="M104 170 L116 170 L116 185 L104 185 Z" fill="#3a1810"/>
+      <!-- Chains -->
+      <path d="M80 128 Q65 140 50 155" fill="none" stroke="#808080" stroke-width="2" stroke-dasharray="3,2"/>
+      <path d="M80 128 Q95 140 110 155" fill="none" stroke="#808080" stroke-width="2" stroke-dasharray="3,2"/>
+      <!-- Pedestal -->
+      <rect x="55" y="138" width="50" height="15" rx="3" fill="#1a0808" stroke="#601010" stroke-width="1.5"/>
+      <!-- Flames -->
+      <text x="22" y="148" fill="#c04010" font-size="12">🔥</text>
+      <text x="118" y="148" fill="#c04010" font-size="12">🔥</text>
+    </svg>`
+  },
+  16: {
+    jp: '塔', en: 'THE TOWER',
+    meaning: '突然の崩壊と啓示。古い構造が一気に崩れ去ります。激動の変化は苦しいですが、偽りの基盤を破壊し、真の再建をもたらします。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#020408" rx="8"/>
+      <!-- Dark sky -->
+      <rect width="160" height="165" fill="#050812"/>
+      <!-- Lightning bolts -->
+      <path d="M110 15 L95 55 L108 55 L85 100" fill="none" stroke="#f0e020" stroke-width="3"/>
+      <path d="M35 25 L28 55 L40 55 L25 90" fill="none" stroke="#f0e020" stroke-width="2" opacity="0.7"/>
+      <!-- Tower on cliff -->
+      <polygon points="30,165 50,165 50,120 80,115 110,120 110,165 130,165 80,175" fill="#303030"/>
+      <!-- Tower body -->
+      <rect x="50" y="70" width="60" height="95" rx="2" fill="#282828" stroke="#484848" stroke-width="1.5"/>
+      <!-- Crown of tower (being blown off) -->
+      <path d="M48 72 L112 72 L108 55 L52 55 Z" fill="#383838" stroke="#484848" stroke-width="1.5" transform="rotate(-8,80,63)"/>
+      <!-- Fire at top -->
+      <text x="55" y="72" fill="#f06010" font-size="16">🔥🔥🔥</text>
+      <!-- Windows -->
+      <rect x="62" y="90" width="12" height="18" rx="2" fill="#f0a020" opacity="0.8"/>
+      <rect x="86" y="90" width="12" height="18" rx="2" fill="#f0a020" opacity="0.8"/>
+      <rect x="62" y="118" width="12" height="18" rx="2" fill="#2040c0" opacity="0.6"/>
+      <rect x="86" y="118" width="12" height="18" rx="2" fill="#2040c0" opacity="0.6"/>
+      <!-- Door -->
+      <path d="M70 165 L90 165 L90 145 Q80 138 70 145 Z" fill="#1a1818"/>
+      <!-- Falling figure 1 (crown) -->
+      <circle cx="118" cy="95" r="7" fill="#d4a870"/>
+      <path d="M115 88 L121 88 L120 84 L116 84 Z" fill="#c9a84c"/>
+      <!-- Falling figure 2 -->
+      <circle cx="42" cy="110" r="7" fill="#c09070"/>
+      <!-- Yods (Hebrew letters falling) -->
+      <text x="30" y="75" fill="#f0d030" font-size="10">𐌙</text>
+      <text x="125" y="80" fill="#f0d030" font-size="10">𐌙</text>
+      <text x="20" y="105" fill="#f0d030" font-size="8">𐌙</text>
+      <text x="132" y="115" fill="#f0d030" font-size="8">𐌙</text>
+      <!-- Rock/cliff -->
+      <polygon points="0,165 160,165 160,210 0,210" fill="#252520"/>
+      <polygon points="0,175 30,165 60,170 100,162 130,168 160,160 160,180 0,185" fill="#302e28"/>
+    </svg>`
+  },
+  17: {
+    jp: '星', en: 'THE STAR',
+    meaning: '希望と癒しの光。試練の後に訪れる希望と再生。あなたは宇宙に導かれ、魂が癒されていきます。未来は明るく輝いています。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#04060e" rx="8"/>
+      <!-- Night sky -->
+      <rect width="160" height="145" fill="#04060e"/>
+      <!-- Large 8-pointed star -->
+      <path d="M80 15 L84 45 L100 25 L90 52 L118 45 L95 65 L118 78 L90 75 L100 103 L80 85 L60 103 L70 75 L42 78 L65 65 L42 45 L70 52 L60 25 L76 45 Z" fill="#f0e050" opacity="0.95"/>
+      <circle cx="80" cy="58" r="8" fill="#fff8d0"/>
+      <!-- 7 small stars -->
+      <text x="22" y="38" fill="#d0d090" font-size="11">★</text>
+      <text x="118" y="32" fill="#d0d090" font-size="11">★</text>
+      <text x="12" y="75" fill="#c0c080" font-size="9">★</text>
+      <text x="130" y="68" fill="#c0c080" font-size="9">★</text>
+      <text x="25" y="105" fill="#c0c080" font-size="8">★</text>
+      <text x="125" y="100" fill="#c0c080" font-size="8">★</text>
+      <text x="70" y="22" fill="#c0c080" font-size="7">★</text>
+      <!-- Water pool -->
+      <ellipse cx="60" cy="170" rx="38" ry="22" fill="#0a2040" stroke="#2060a0" stroke-width="1"/>
+      <!-- Ground -->
+      <rect x="0" y="165" width="160" height="45" fill="#1a2a10"/>
+      <!-- Grass tufts -->
+      <text x="95" y="180" fill="#3a5020" font-size="12">🌿</text>
+      <text x="120" y="188" fill="#3a5020" font-size="10">🌿</text>
+      <!-- Ibis bird on tree -->
+      <rect x="133" y="135" width="5" height="40" fill="#4a3010"/>
+      <ellipse cx="135" cy="132" rx="10" ry="12" fill="#2a4010"/>
+      <circle cx="138" cy="118" r="5" fill="#d4a870"/>
+      <path d="M143 118 L155 115" stroke="#d4a870" stroke-width="2"/>
+      <!-- Kneeling figure -->
+      <circle cx="65" cy="140" r="10" fill="#f0c890"/>
+      <!-- Robe -->
+      <path d="M52 150 Q65 156 78 150 L80 178 L50 178 Z" fill="#60a0c0"/>
+      <!-- Two pitchers of water -->
+      <rect x="48" y="155" width="10" height="18" rx="3" fill="#2040a0" stroke="#60a0c0" stroke-width="1"/>
+      <rect x="72" y="155" width="10" height="18" rx="3" fill="#2040a0" stroke="#60a0c0" stroke-width="1"/>
+      <!-- Water flowing from pitchers -->
+      <path d="M48 162 Q40 165 35 170" fill="none" stroke="#60a0d0" stroke-width="2"/>
+      <path d="M82 162 Q88 165 92 168" fill="none" stroke="#60a0d0" stroke-width="2"/>
+    </svg>`
+  },
+  18: {
+    jp: '月', en: 'THE MOON',
+    meaning: '幻想と潜在意識の深み。混乱や不安があるかもしれませんが、直感を信じてください。無意識の世界に潜む真実が明らかになります。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#02020a" rx="8"/>
+      <!-- Moon face -->
+      <circle cx="80" cy="45" r="30" fill="#d0c080"/>
+      <circle cx="80" cy="45" r="26" fill="#e8d890"/>
+      <!-- Moon profile face -->
+      <path d="M80 30 Q95 38 95 52 Q95 62 80 68 Q90 55 85 45 Q92 38 80 30Z" fill="#c8b870"/>
+      <!-- Eye, nose on moon -->
+      <circle cx="85" cy="42" r="2.5" fill="#8a7830"/>
+      <circle cx="88" cy="50" r="1.5" fill="#8a7830"/>
+      <!-- Yods (divine drops) -->
+      <text x="30" y="70" fill="#d0b040" font-size="9">𐌙</text>
+      <text x="50" y="82" fill="#d0b040" font-size="8">𐌙</text>
+      <text x="100" y="75" fill="#d0b040" font-size="9">𐌙</text>
+      <text x="118" y="85" fill="#d0b040" font-size="8">𐌙</text>
+      <!-- Two towers -->
+      <rect x="18" y="110" width="22" height="80" rx="2" fill="#181820" stroke="#303040" stroke-width="1.5"/>
+      <path d="M18 110 L29 95 L40 110 Z" fill="#181820" stroke="#303040" stroke-width="1"/>
+      <rect x="120" y="110" width="22" height="80" rx="2" fill="#181820" stroke="#303040" stroke-width="1.5"/>
+      <path d="M120 110 L131 95 L142 110 Z" fill="#181820" stroke="#303040" stroke-width="1"/>
+      <!-- Path between towers -->
+      <path d="M40 190 Q80 160 120 190" fill="none" stroke="#304060" stroke-width="3"/>
+      <!-- Pool of water -->
+      <ellipse cx="80" cy="155" rx="38" ry="18" fill="#0a1828" stroke="#1a3050" stroke-width="1"/>
+      <!-- Crayfish emerging from water -->
+      <text x="66" y="162" fill="#c04020" font-size="14">🦞</text>
+      <!-- Dog (left) -->
+      <ellipse cx="48" cy="175" rx="16" ry="10" fill="#d4a030"/>
+      <circle cx="60" cy="168" r="8" fill="#c89020"/>
+      <!-- Wolf (right, darker) -->
+      <ellipse cx="112" cy="175" rx="16" ry="10" fill="#5a5858"/>
+      <circle cx="100" cy="168" r="8" fill="#4a4848"/>
+      <!-- Stars in sky -->
+      <text x="12" y="30" fill="#c0c080" font-size="6">·</text>
+      <text x="140" y="25" fill="#c0c080" font-size="6">·</text>
+      <text x="15" y="55" fill="#c0c080" font-size="6">·</text>
+      <text x="138" y="60" fill="#c0c080" font-size="6">·</text>
+    </svg>`
+  },
+  19: {
+    jp: '太陽', en: 'THE SUN',
+    meaning: '喜びと輝きの成功。明るく清らかなエネルギーがあなたを照らします。喜び、活力、成功が訪れる最も幸福なカードの一つです。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#f8e040" rx="8"/>
+      <!-- Sun with face -->
+      <circle cx="80" cy="50" r="35" fill="#f0a010"/>
+      <!-- Sun rays - wavy and straight alternating -->
+      <line x1="80" y1="12" x2="80" y2="4" stroke="#f0a010" stroke-width="3"/>
+      <line x1="80" y1="88" x2="80" y2="96" stroke="#f0a010" stroke-width="3"/>
+      <line x1="42" y1="50" x2="34" y2="50" stroke="#f0a010" stroke-width="3"/>
+      <line x1="118" y1="50" x2="126" y2="50" stroke="#f0a010" stroke-width="3"/>
+      <line x1="53" y1="21" x2="48" y2="15" stroke="#f0a010" stroke-width="3"/>
+      <line x1="107" y1="21" x2="112" y2="15" stroke="#f0a010" stroke-width="3"/>
+      <line x1="53" y1="79" x2="48" y2="85" stroke="#f0a010" stroke-width="3"/>
+      <line x1="107" y1="79" x2="112" y2="85" stroke="#f0a010" stroke-width="3"/>
+      <!-- Wavy rays -->
+      <path d="M67 14 Q65 8 67 4" fill="none" stroke="#f0a010" stroke-width="2.5"/>
+      <path d="M93 14 Q95 8 93 4" fill="none" stroke="#f0a010" stroke-width="2.5"/>
+      <!-- Sun face -->
+      <circle cx="74" cy="44" r="4" fill="#8a4010"/>
+      <circle cx="86" cy="44" r="4" fill="#8a4010"/>
+      <path d="M73 58 Q80 64 87 58" fill="none" stroke="#8a4010" stroke-width="2"/>
+      <circle cx="80" cy="50" r="3" fill="#8a4010" opacity="0.5"/>
+      <!-- Sunflower wall -->
+      <rect x="5" y="140" width="150" height="10" rx="2" fill="#8a7030" stroke="#6a5010" stroke-width="1.5"/>
+      <!-- Sunflowers -->
+      <text x="12" y="140" fill="#c04010" font-size="14">🌻</text>
+      <text x="38" y="138" fill="#c04010" font-size="16">🌻</text>
+      <text x="68" y="140" fill="#c04010" font-size="14">🌻</text>
+      <text x="98" y="138" fill="#c04010" font-size="16">🌻</text>
+      <text x="128" y="140" fill="#c04010" font-size="14">🌻</text>
+      <!-- Child on horse -->
+      <!-- White horse -->
+      <ellipse cx="85" cy="170" rx="45" ry="20" fill="#f8f8f0"/>
+      <ellipse cx="120" cy="155" rx="18" ry="15" fill="#f8f8f0"/>
+      <!-- Horse mane -->
+      <path d="M112 143 Q118 135 125 143" fill="#e0d8c0"/>
+      <!-- Horse legs -->
+      <rect x="55" y="185" width="8" height="18" rx="3" fill="#f0f0e8"/>
+      <rect x="72" y="188" width="8" height="15" rx="3" fill="#f0f0e8"/>
+      <rect x="95" y="188" width="8" height="15" rx="3" fill="#f0f0e8"/>
+      <rect x="112" y="185" width="8" height="18" rx="3" fill="#f0f0e8"/>
+      <!-- Child figure -->
+      <circle cx="72" cy="142" r="11" fill="#f0c890"/>
+      <!-- Crown of flowers -->
+      <text x="64" y="143" fill="#e06080" font-size="8">❀❀❀</text>
+      <!-- Red banner/flag -->
+      <line x1="72" y1="130" x2="72" y2="105" stroke="#8a5020" stroke-width="2"/>
+      <rect x="72" y="105" width="30" height="18" rx="2" fill="#c02010"/>
+      <!-- Arms outstretched -->
+      <line x1="72" y1="153" x2="50" y2="148" stroke="#f0c890" stroke-width="5"/>
+      <line x1="72" y1="153" x2="94" y2="148" stroke="#f0c890" stroke-width="5"/>
+    </svg>`
+  },
+  20: {
+    jp: '審判', en: 'JUDGEMENT',
+    meaning: '覚醒と再生の呼び声。高次の呼びかけに応え、過去を清算し、新たな自己として生まれ変わる時が来ました。内なる声に従って立ち上がりましょう。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080410" rx="8"/>
+      <!-- Cloudy sky -->
+      <ellipse cx="40" cy="45" rx="35" ry="22" fill="#c0c8d0" opacity="0.8"/>
+      <ellipse cx="80" cy="35" rx="30" ry="18" fill="#d0d8e0" opacity="0.8"/>
+      <ellipse cx="120" cy="45" rx="35" ry="22" fill="#c0c8d0" opacity="0.8"/>
+      <!-- Angel Raphael in clouds -->
+      <circle cx="80" cy="38" r="12" fill="#f8d080"/>
+      <!-- Wings -->
+      <path d="M68 40 Q45 30 40 50 Q50 58 68 52 Z" fill="#f0a020"/>
+      <path d="M92 40 Q115 30 120 50 Q110 58 92 52 Z" fill="#f0a020"/>
+      <!-- Trumpet -->
+      <path d="M80 50 L55 75" stroke="#c9a84c" stroke-width="4"/>
+      <ellipse cx="50" cy="78" rx="10" ry="7" fill="none" stroke="#c9a84c" stroke-width="2" transform="rotate(-30,50,78)"/>
+      <!-- Cross banner -->
+      <line x1="55" y1="68" x2="78" y2="52" stroke="#c0c0c0" stroke-width="2"/>
+      <rect x="58" y="58" width="22" height="14" rx="2" fill="#e0e0e8"/>
+      <line x1="62" y1="62" x2="76" y2="72" stroke="#c03020" stroke-width="2"/>
+      <line x1="76" y1="62" x2="62" y2="72" stroke="#c03020" stroke-width="2"/>
+      <!-- Sound waves from trumpet -->
+      <path d="M42 72 Q32 78 30 88" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.5"/>
+      <path d="M44 78 Q34 86 32 98" fill="none" stroke="#c9a84c" stroke-width="1.5" opacity="0.3"/>
+      <!-- Ocean/water -->
+      <rect x="0" y="145" width="160" height="65" fill="#0a1828"/>
+      <!-- Rising coffin/sarcophagus -->
+      <rect x="55" y="130" width="50" height="30" rx="4" fill="#2a2020" stroke="#606050" stroke-width="1.5"/>
+      <path d="M55 130 L80 118 L105 130" fill="#3a3028" stroke="#606050" stroke-width="1.5"/>
+      <!-- Rising figures -->
+      <!-- Center figure (adult) -->
+      <circle cx="80" cy="112" r="10" fill="#d4a870"/>
+      <rect x="72" y="122" width="16" height="20" rx="3" fill="#a0c040"/>
+      <!-- Arms raised -->
+      <line x1="72" y1="128" x2="58" y2="118" stroke="#d4a870" stroke-width="5"/>
+      <line x1="88" y1="128" x2="102" y2="118" stroke="#d4a870" stroke-width="5"/>
+      <!-- Left figure -->
+      <circle cx="40" cy="138" r="8" fill="#c09070"/>
+      <rect x="33" y="146" width="14" height="18" rx="3" fill="#c03020"/>
+      <!-- Right figure -->
+      <circle cx="120" cy="138" r="8" fill="#d4a870"/>
+      <rect x="113" y="146" width="14" height="18" rx="3" fill="#3030c0"/>
+      <!-- Mountains in bg -->
+      <polygon points="0,145 30,105 60,135 90,115 120,130 160,100 160,145 0,145" fill="#101510"/>
+      <!-- Stars -->
+      <text x="15" y="22" fill="#c9a84c" font-size="8">✦</text>
+      <text x="135" y="22" fill="#c9a84c" font-size="8">✦</text>
+    </svg>`
+  },
+  21: {
+    jp: '世界', en: 'THE WORLD',
+    meaning: '完成と達成の喜び。長い旅が完成の域に達し、目標を達成した状態。全てが調和し、あなたは世界と一体となっています。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080a18" rx="8"/>
+      <!-- Starry sky -->
+      <text x="15" y="20" fill="#c9a84c" font-size="7">✦</text>
+      <text x="130" y="15" fill="#c9a84c" font-size="7">✦</text>
+      <text x="75" y="12" fill="#c9a84c" font-size="5">·</text>
+      <!-- Laurel wreath (oval) -->
+      <ellipse cx="80" cy="105" rx="60" ry="85" fill="none" stroke="#4a8020" stroke-width="4"/>
+      <!-- Leaves on wreath -->
+      <text x="22" y="55" fill="#4a8020" font-size="10">🌿</text>
+      <text x="122" y="55" fill="#4a8020" font-size="10">🌿</text>
+      <text x="17" y="115" fill="#4a8020" font-size="10">🌿</text>
+      <text x="127" y="115" fill="#4a8020" font-size="10">🌿</text>
+      <text x="22" y="170" fill="#4a8020" font-size="10">🌿</text>
+      <text x="122" y="170" fill="#4a8020" font-size="10">🌿</text>
+      <!-- Top and bottom ribbons on wreath -->
+      <path d="M48 28 Q80 22 112 28" fill="none" stroke="#c9a84c" stroke-width="3"/>
+      <path d="M48 188 Q80 194 112 188" fill="none" stroke="#c9a84c" stroke-width="3"/>
+      <!-- Dancing figure in center -->
+      <circle cx="80" cy="85" r="11" fill="#f0c890"/>
+      <!-- Hair/crown -->
+      <path d="M72 80 Q80 72 88 80" fill="#c8a060"/>
+      <!-- Floating scarf/veil -->
+      <path d="M58 92 Q68 85 80 92 Q92 85 102 92" fill="none" stroke="#9b40c0" stroke-width="3" opacity="0.9"/>
+      <!-- Body dancing -->
+      <path d="M60 100 Q80 107 100 100 L102 140 L58 140 Z" fill="#c04080" opacity="0.9"/>
+      <!-- Legs in dance pose -->
+      <line x1="72" y1="140" x2="65" y2="165" stroke="#d4a870" stroke-width="7"/>
+      <line x1="88" y1="140" x2="100" y2="160" stroke="#d4a870" stroke-width="7"/>
+      <!-- Arms outstretched -->
+      <line x1="60" y1="108" x2="38" y2="98" stroke="#d4a870" stroke-width="6"/>
+      <line x1="100" y1="108" x2="122" y2="98" stroke="#d4a870" stroke-width="6"/>
+      <!-- Wands in hands -->
+      <line x1="28" y1="92" x2="38" y2="105" stroke="#c9a84c" stroke-width="2.5"/>
+      <circle cx="27" cy="90" r="3" fill="#f0d080"/>
+      <line x1="132" y1="92" x2="122" y2="105" stroke="#c9a84c" stroke-width="2.5"/>
+      <circle cx="133" cy="90" r="3" fill="#f0d080"/>
+      <!-- Four corner creatures -->
+      <text x="5" y="30" fill="#c9a84c" font-size="11">👼</text>
+      <text x="132" y="30" fill="#c9a84c" font-size="11">🦅</text>
+      <text x="5" y="195" fill="#c9a84c" font-size="11">🐂</text>
+      <text x="132" y="195" fill="#c9a84c" font-size="11">🦁</text>
+    </svg>`
+  },
+  22: {
+    jp: '愚者', en: 'THE FOOL',
+    meaning: '無限の可能性と純粋な始まり。ゼロからの出発。無邪気な心で新しい冒険へと踏み出す勇気。全ての始まりであり、全てを包む数です。',
+    svg: `<svg viewBox="0 0 160 210" xmlns="http://www.w3.org/2000/svg">
+      <rect width="160" height="210" fill="#080810" rx="8"/>
+      <!-- Bright sky -->
+      <rect width="160" height="120" fill="#102048"/>
+      <!-- Sun -->
+      <circle cx="125" cy="30" r="20" fill="#f0c820"/>
+      <circle cx="125" cy="30" r="15" fill="#f8d840"/>
+      <!-- Sun rays -->
+      <line x1="125" y1="6" x2="125" y2="2" stroke="#f0c820" stroke-width="2"/>
+      <line x1="105" y1="12" x2="102" y2="9" stroke="#f0c820" stroke-width="2"/>
+      <line x1="145" y1="12" x2="148" y2="9" stroke="#f0c820" stroke-width="2"/>
+      <line x1="105" y1="48" x2="102" y2="51" stroke="#f0c820" stroke-width="2"/>
+      <line x1="145" y1="48" x2="148" y2="51" stroke="#f0c820" stroke-width="2"/>
+      <!-- Mountains -->
+      <polygon points="0,120 40,60 80,95 120,50 160,85 160,120 0,120" fill="#181828"/>
+      <!-- Snow peaks -->
+      <polygon points="100,55 120,50 140,62" fill="#e8e8f0"/>
+      <polygon points="20,65 40,60 60,72" fill="#e8e8f0"/>
+      <!-- Ground/cliff edge -->
+      <rect x="0" y="120" width="100" height="90" fill="#2a3820"/>
+      <!-- Cliff -->
+      <path d="M100 120 L100 210 L160 210 L160 120 Z" fill="#1a1a28"/>
+      <path d="M98 118 Q105 112 115 118 L115 210 L98 210 Z" fill="#141425"/>
+      <!-- Figure of the Fool -->
+      <circle cx="65" cy="82" r="12" fill="#f0c890"/>
+      <!-- Jester hat with bells -->
+      <path d="M53 78 Q65 60 77 78" fill="#c03020"/>
+      <path d="M53 78 L42 62 Q48 60 53 66 Q53 72 53 78Z" fill="#f0c020"/>
+      <path d="M77 78 L88 62 Q82 60 77 66 Q77 72 77 78Z" fill="#6040c0"/>
+      <circle cx="42" cy="62" r="3" fill="#f0c020" opacity="0.9"/>
+      <circle cx="88" cy="62" r="3" fill="#f0c020" opacity="0.9"/>
+      <circle cx="65" cy="58" r="3" fill="#c03020" opacity="0.9"/>
+      <!-- Colorful tunic -->
+      <path d="M45 95 Q65 101 85 95 L88 150 L42 150 Z" fill="#c03020"/>
+      <!-- Diamond pattern -->
+      <path d="M52 108 L65 100 L78 108 L65 116 Z" fill="#f0c020"/>
+      <path d="M52 125 L65 117 L78 125 L65 133 Z" fill="#6040c0"/>
+      <!-- Legs -->
+      <line x1="58" y1="150" x2="52" y2="180" stroke="#f0c020" stroke-width="8"/>
+      <line x1="72" y1="150" x2="82" y2="176" stroke="#6040c0" stroke-width="8"/>
+      <!-- Shoes (curled toe) -->
+      <path d="M45 180 Q50 185 56 178" fill="#1a1010" stroke="none"/>
+      <path d="M82 176 Q88 182 80 185" fill="#1a1010" stroke="none"/>
+      <!-- Walking staff with bag -->
+      <line x1="88" y1="78" x2="102" y2="168" stroke="#8a5010" stroke-width="3"/>
+      <!-- Bundle/bag -->
+      <circle cx="96" cy="82" r="9" fill="#d0a060" stroke="#8a5010" stroke-width="1.5"/>
+      <!-- White rose in other hand -->
+      <line x1="45" y1="98" x2="32" y2="118" stroke="#5a8020" stroke-width="2"/>
+      <text x="24" y="120" fill="#f0f0f0" font-size="12">✿</text>
+      <!-- Small white dog -->
+      <ellipse cx="92" cy="148" rx="15" ry="9" fill="#e8e8e0"/>
+      <circle cx="104" cy="142" r="7" fill="#e8e8e0"/>
+      <text x="97" y="147" fill="#1a1010" font-size="6">·  ·</text>
+      <!-- Stars -->
+      <text x="15" y="38" fill="#c9a84c" font-size="8">✦</text>
+      <text x="35" y="22" fill="#c9a84c" font-size="6">·</text>
+      <text x="90" y="18" fill="#c9a84c" font-size="7">✦</text>
+    </svg>`
+  }
+};
+
+// ─── Calculation ──────────────────────────────────────────────────────────────
+function digitSum(n) {
+  return n.toString().split('').reduce((s, d) => s + parseInt(d, 10), 0);
+}
+
+function calculate() {
+  const raw = document.getElementById('birthInput').value.trim();
+  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
+  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  const year  = parseInt(parts[1]);
+  const month = parseInt(parts[2]);
+  const day   = parseInt(parts[3]);
+  if (year < 1800 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+    alert('正しい日付を入力してください'); return;
+  }
+
+  // Collect only digits from the date
+  const digits = String(year) + String(month).padStart(2,'0') + String(day).padStart(2,'0');
+
+  // Step 1: sum all digits
+  const steps = [];
+  const initialDigits = digits.split('').join(' + ');
+  let current = digits.split('').reduce((s, d) => s + parseInt(d, 10), 0);
+  steps.push({ label: `${year}/${month}/${day} → ${initialDigits}`, result: current });
+
+  // Keep reducing while > 22
+  while (current > 22) {
+    const prev = current;
+    const parts = prev.toString().split('').join(' + ');
+    current = digitSum(prev);
+    steps.push({ label: `${prev} → ${parts}`, result: current });
+  }
+
+  // Render steps
+  const stepsEl = document.getElementById('calcSteps');
+  stepsEl.innerHTML = '';
+  steps.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'step';
+    if (i === 0) {
+      div.innerHTML = `<span class="step-arrow">✦</span> <span>${s.label} = <span class="step-highlight">${s.result}</span></span>`;
+    } else {
+      div.innerHTML = `<span class="step-arrow">→</span> <span>${s.label} = <span class="step-highlight">${s.result}</span></span>`;
+    }
+    stepsEl.appendChild(div);
+  });
+  if (steps.length === 1) {
+    const div = document.createElement('div');
+    div.className = 'step';
+    div.innerHTML = `<span class="step-arrow">✦</span> <span>合計 <span class="step-highlight">${current}</span> は22以下なのでそのまま確定</span>`;
+    stepsEl.appendChild(div);
+  } else {
+    const last = document.createElement('div');
+    last.className = 'step';
+    last.style.marginTop = '0.4rem';
+    last.style.borderTop = '1px solid rgba(107,79,160,0.3)';
+    last.style.paddingTop = '0.4rem';
+    last.innerHTML = `<span class="step-arrow">★</span> <span>あなたの数字: <span class="step-highlight" style="font-size:1.1em">${current}</span></span>`;
+    stepsEl.appendChild(last);
+  }
+  stepsEl.classList.add('show');
+
+  // Show result number
+  const numEl = document.getElementById('resultNumber');
+  numEl.textContent = current;
+  numEl.classList.add('show');
+
+  // Show card
+  const card = CARDS[current];
+  document.getElementById('cardNum').textContent = `— ${card.en.split(' ').map(w => w[0]).join('')} · ${String(current).padStart(2,'0')} —`;
+  document.getElementById('cardSvg').innerHTML = card.svg;
+  document.getElementById('cardTitleJp').textContent = card.jp;
+  document.getElementById('cardTitleEn').textContent = card.en;
+  document.getElementById('cardMeaning').innerHTML = `<h3>✦ カードのメッセージ</h3>${card.meaning}`;
+
+  const wrapper = document.getElementById('cardWrapper');
+  wrapper.classList.remove('show');
+  void wrapper.offsetWidth; // reflow for animation
+  wrapper.classList.add('show');
+
+  // Scroll to result
+  setTimeout(() => wrapper.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 100);
+}
+
+// Set default date to today
+(function() {
+  const t = new Date();
+  document.getElementById('birthInput').value =
+    t.getFullYear() + '/' + (t.getMonth()+1) + '/' + t.getDate();
+})();
+</script>
+</body>
+</html>

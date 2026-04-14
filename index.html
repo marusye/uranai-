@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>占いアプリ集</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif;
+      background: linear-gradient(135deg, #0d0d2b 0%, #1a0533 50%, #0d0d2b 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+    }
+    h1 {
+      color: #f0d080;
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 10px;
+      text-shadow: 0 0 20px rgba(240, 208, 128, 0.5);
+    }
+    .subtitle {
+      color: #a899c8;
+      text-align: center;
+      margin-bottom: 40px;
+      font-size: 0.95rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 20px;
+      max-width: 900px;
+      width: 100%;
+    }
+    .card {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(240, 208, 128, 0.2);
+      border-radius: 16px;
+      padding: 30px 20px;
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.2s, background 0.2s, box-shadow 0.2s;
+      cursor: pointer;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+      background: rgba(255,255,255,0.1);
+      box-shadow: 0 10px 30px rgba(240, 208, 128, 0.15);
+    }
+    .card .emoji {
+      font-size: 3rem;
+      margin-bottom: 15px;
+      display: block;
+    }
+    .card .name {
+      color: #f0d080;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+    .card .desc {
+      color: #a899c8;
+      font-size: 0.85rem;
+      line-height: 1.5;
+    }
+    footer {
+      margin-top: 50px;
+      color: #5a4a7a;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>✨ 占いアプリ集 ✨</h1>
+  <p class="subtitle">お好きな占いをお選びください</p>
+
+  <div class="grid">
+    <a class="card" href="horoscope/index.html">
+      <span class="emoji">♈</span>
+      <div class="name">星座占い</div>
+      <div class="desc">12星座であなたの運勢を占います</div>
+    </a>
+    <a class="card" href="tarot/index.html">
+      <span class="emoji">🃏</span>
+      <div class="name">タロット占い</div>
+      <div class="desc">タロットカードで未来を読み解きます</div>
+    </a>
+    <a class="card" href="numerology-tarot/index.html">
+      <span class="emoji">🔢</span>
+      <div class="name">数秘術・タロット</div>
+      <div class="desc">数字の神秘とタロットで運命を探ります</div>
+    </a>
+    <a class="card" href="shichusuimei/index.html">
+      <span class="emoji">☯️</span>
+      <div class="name">四柱推命</div>
+      <div class="desc">生年月日から運命の流れを読みます</div>
+    </a>
+    <a class="card" href="maya/index.html">
+      <span class="emoji">🌀</span>
+      <div class="name">マヤ占い</div>
+      <div class="desc">古代マヤ暦であなたの使命を知ります</div>
+    </a>
+    <a class="card" href="doubutsu-uranai/index.html">
+      <span class="emoji">🐾</span>
+      <div class="name">動物占い</div>
+      <div class="desc">あなたを動物キャラクターで表します</div>
+    </a>
+  </div>
+
+  <footer>© 2025 占いアプリ集</footer>
+</body>
+</html>

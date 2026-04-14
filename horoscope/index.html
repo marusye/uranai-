@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ホロスコープ</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Cinzel:wght@400;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #04060f; --dark: #080c1a; --card: #0c1020;
+      --gold: #c9a84c; --gold-l: #f0d080;
+      --blue: #2050a8; --blue-l: #4080d8;
+      --text: #d8e0f0; --dim: #6070a0;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Serif JP', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(32,80,168,0.15) 0%, transparent 70%); pointer-events: none; }
+    .container { position: relative; z-index: 1; width: 100%; max-width: 720px; padding: 2rem 1rem 4rem; display: flex; flex-direction: column; align-items: center; gap: 1.8rem; }
+
+    /* Header */
+    .header { text-align: center; }
+    .header h1 { font-size: 2.2rem; font-weight: 900; letter-spacing: 0.3em; background: linear-gradient(135deg, #4080d8, #c9a84c, #4080d8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .header p { color: var(--dim); font-size: 0.82rem; letter-spacing: 0.1em; margin-top: 0.4rem; }
+    .divider { width: 260px; height: 1px; background: linear-gradient(90deg, transparent, var(--blue-l), var(--gold), var(--blue-l), transparent); margin: 0.5rem auto; }
+
+    /* Input */
+    .input-section { background: var(--card); border: 1px solid rgba(64,128,216,0.3); border-radius: 16px; padding: 1.8rem; width: 100%; box-shadow: 0 0 40px rgba(32,80,168,0.15); }
+    .input-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 480px) { .input-grid { grid-template-columns: 1fr; } }
+    .input-group { display: flex; flex-direction: column; gap: 0.4rem; }
+    .input-group label { font-size: 0.8rem; color: var(--gold); letter-spacing: 0.08em; }
+    input[type="date"], input[type="time"], input[type="number"], input[type="text"], select { background: rgba(255,255,255,0.04); border: 1px solid rgba(64,128,216,0.4); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 0.95rem; padding: 0.6rem 0.8rem; outline: none; transition: border-color 0.3s, box-shadow 0.3s; color-scheme: dark; width: 100%; }
+    .date-row { display: flex; align-items: center; gap: 0.5rem; }
+    .date-group { display: flex; align-items: center; gap: 0.3rem; flex: 1; }
+    .date-group input { width: 100%; min-width: 0; }
+    .date-unit { font-size: 0.9rem; color: var(--dim, #888); white-space: nowrap; flex-shrink: 0; }
+    input[type="number"] { -moz-appearance: textfield; }
+    input[type="number"]::-webkit-outer-spin-button,
+    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input:focus, select:focus { border-color: var(--blue-l); box-shadow: 0 0 12px rgba(64,128,216,0.3); }
+    select option { background: #0c1020; }
+    .input-group.full { grid-column: 1 / -1; }
+    .btn { display: block; width: 100%; margin-top: 1.2rem; background: linear-gradient(135deg, #0a2060, #2050a8, #0a2060); border: 1px solid rgba(64,128,216,0.6); border-radius: 8px; color: #fff; cursor: pointer; font-family: inherit; font-size: 1rem; font-weight: 700; letter-spacing: 0.3em; padding: 0.75rem; transition: all 0.2s; box-shadow: 0 2px 20px rgba(32,80,168,0.4); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 30px rgba(64,128,216,0.6); }
+
+    /* Section */
+    .section { width: 100%; display: none; animation: fadeUp 0.6s ease both; }
+    .section.show { display: block; }
+    .section-title { text-align: center; font-size: 0.95rem; letter-spacing: 0.25em; color: var(--gold); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center; }
+    .section-title::before, .section-title::after { content: '✦'; font-size: 0.5rem; opacity: 0.7; }
+
+    /* Chart */
+    .chart-wrap { display: flex; justify-content: center; width: 100%; }
+    .chart-wrap svg { max-width: 100%; height: auto; }
+
+    /* Planet table */
+    .planet-table { width: 100%; background: var(--card); border: 1px solid rgba(64,128,216,0.2); border-radius: 12px; overflow: hidden; }
+    .planet-table table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    .planet-table th { background: rgba(32,80,168,0.2); color: var(--gold); font-weight: 700; padding: 0.6rem 0.8rem; text-align: left; letter-spacing: 0.05em; font-size: 0.78rem; }
+    .planet-table td { padding: 0.55rem 0.8rem; border-top: 1px solid rgba(64,128,216,0.1); }
+    .planet-table tr:hover td { background: rgba(64,128,216,0.05); }
+    .glyph { font-size: 1.1rem; }
+
+    /* Aspects */
+    .aspects-grid { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .aspect-tag { background: var(--card); border: 1px solid rgba(64,128,216,0.2); border-radius: 8px; padding: 0.4rem 0.8rem; font-size: 0.8rem; }
+
+    /* Interpretation cards */
+    .interp-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+    @media (min-width: 500px) { .interp-grid { grid-template-columns: 1fr 1fr; } }
+    .interp-card { background: var(--card); border: 1px solid rgba(64,128,216,0.25); border-radius: 12px; padding: 1.2rem; }
+    .interp-card h3 { font-size: 0.78rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    .interp-card .sign-name { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .interp-card p { font-size: 0.82rem; line-height: 1.85; color: var(--text); }
+    .interp-card.full { grid-column: 1 / -1; }
+
+    /* Element balance */
+    .elem-row { display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.6rem; }
+    .elem-label { width: 60px; font-size: 0.85rem; font-weight: 700; flex-shrink: 0; }
+    .elem-bar-wrap { flex: 1; height: 16px; background: rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; }
+    .elem-bar { height: 100%; border-radius: 8px; transition: width 1s cubic-bezier(0.34,1.56,0.64,1); }
+    .elem-count { font-size: 0.82rem; color: var(--dim); width: 20px; text-align: right; flex-shrink: 0; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    footer { position: relative; z-index: 1; color: var(--dim); font-size: 0.72rem; text-align: center; padding-bottom: 2rem; letter-spacing: 0.1em; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>✦ ホロスコープ ✦</h1>
+    <div class="divider"></div>
+    <p>出生時刻と場所から導くネイタルチャート</p>
+  </div>
+
+  <div class="input-section">
+    <form onsubmit="calculate(); return false;">
+    <div class="input-grid">
+      <div class="input-group">
+        <label>生年月日</label>
+        <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+      </div>
+      <div class="input-group">
+        <label>生まれた時刻</label>
+        <input type="time" id="timeInput" value="12:00">
+      </div>
+      <div class="input-group full">
+        <label>出生地</label>
+        <select id="citySelect"></select>
+      </div>
+    </div>
+    <button type="submit" class="btn">ホロスコープを作成</button>
+    </form>
+  </div>
+
+  <div class="section" id="chartSection">
+    <div class="section-title">ネイタルチャート</div>
+    <div class="chart-wrap" id="chartWrap"></div>
+  </div>
+
+  <div class="section" id="tableSection">
+    <div class="section-title">惑星配置</div>
+    <div class="planet-table" id="planetTable"></div>
+  </div>
+
+  <div class="section" id="aspectSection">
+    <div class="section-title">主要アスペクト</div>
+    <div class="aspects-grid" id="aspectsGrid"></div>
+  </div>
+
+  <div class="section" id="elemSection">
+    <div class="section-title">エレメントバランス</div>
+    <div id="elemBars"></div>
+  </div>
+
+  <div class="section" id="interpSection">
+    <div class="section-title">星座の解釈</div>
+    <div class="interp-grid" id="interpGrid"></div>
+  </div>
+
+</div>
+<footer>ホロスコープ · 簡易惑星軌道計算（±数度の誤差あり）</footer>
+
+<script>
+// ─── City Data ────────────────────────────────────────────────────────────────
+const CITIES = [
+  {name:'東京',       lat:35.6762, lon:139.6503},
+  {name:'大阪',       lat:34.6937, lon:135.5023},
+  {name:'名古屋',     lat:35.1815, lon:136.9066},
+  {name:'札幌',       lat:43.0618, lon:141.3545},
+  {name:'福岡',       lat:33.5902, lon:130.4017},
+  {name:'京都',       lat:35.0116, lon:135.7681},
+  {name:'横浜',       lat:35.4437, lon:139.6380},
+  {name:'神戸',       lat:34.6913, lon:135.1830},
+  {name:'広島',       lat:34.3853, lon:132.4553},
+  {name:'仙台',       lat:38.2682, lon:140.8694},
+  {name:'那覇',       lat:26.2124, lon:127.6792},
+  {name:'新潟',       lat:37.9162, lon:139.0364},
+  {name:'金沢',       lat:36.5944, lon:136.6256},
+  {name:'熊本',       lat:32.7898, lon:130.7417},
+  {name:'ソウル',     lat:37.5665, lon:126.9780},
+  {name:'北京',       lat:39.9042, lon:116.4074},
+  {name:'上海',       lat:31.2304, lon:121.4737},
+  {name:'シンガポール',lat:1.3521, lon:103.8198},
+  {name:'ニューヨーク',lat:40.7128, lon:-74.0060},
+  {name:'ロンドン',   lat:51.5074, lon:-0.1278},
+  {name:'パリ',       lat:48.8566, lon:2.3522},
+  {name:'ベルリン',   lat:52.5200, lon:13.4050},
+  {name:'ロサンゼルス',lat:34.0522, lon:-118.2437},
+  {name:'シドニー',   lat:-33.8688, lon:151.2093},
+];
+
+// ─── Astrology Data ───────────────────────────────────────────────────────────
+const SIGNS = [
+  {name:'牡羊座', en:'Aries',       glyph:'♈', elem:'fire',  color:'#e05040', ruleby:'火星'},
+  {name:'牡牛座', en:'Taurus',      glyph:'♉', elem:'earth', color:'#70b050', ruleby:'金星'},
+  {name:'双子座', en:'Gemini',      glyph:'♊', elem:'air',   color:'#e0c030', ruleby:'水星'},
+  {name:'蟹座',   en:'Cancer',      glyph:'♋', elem:'water', color:'#7090d0', ruleby:'月'},
+  {name:'獅子座', en:'Leo',         glyph:'♌', elem:'fire',  color:'#e08030', ruleby:'太陽'},
+  {name:'乙女座', en:'Virgo',       glyph:'♍', elem:'earth', color:'#60a870', ruleby:'水星'},
+  {name:'天秤座', en:'Libra',       glyph:'♎', elem:'air',   color:'#e080b0', ruleby:'金星'},
+  {name:'蠍座',   en:'Scorpio',     glyph:'♏', elem:'water', color:'#8040c0', ruleby:'冥王星'},
+  {name:'射手座', en:'Sagittarius', glyph:'♐', elem:'fire',  color:'#d05028', ruleby:'木星'},
+  {name:'山羊座', en:'Capricorn',   glyph:'♑', elem:'earth', color:'#507090', ruleby:'土星'},
+  {name:'水瓶座', en:'Aquarius',    glyph:'♒', elem:'air',   color:'#40c0d0', ruleby:'天王星'},
+  {name:'魚座',   en:'Pisces',      glyph:'♓', elem:'water', color:'#6080e0', ruleby:'海王星'},
+];
+
+const ELEMS = {
+  fire:  {label:'火', color:'#e05040', bg:'rgba(200,60,40,0.6)'},
+  earth: {label:'地', color:'#70b050', bg:'rgba(80,160,60,0.6)'},
+  air:   {label:'風', color:'#e0c030', bg:'rgba(200,180,30,0.6)'},
+  water: {label:'水', color:'#6080e0', bg:'rgba(60,100,200,0.6)'},
+};
+
+const PLANETS = [
+  {name:'太陽', glyph:'☉', color:'#FFD700'},
+  {name:'月',   glyph:'☽', color:'#C0C8E0'},
+  {name:'水星', glyph:'☿', color:'#A0A8B8'},
+  {name:'金星', glyph:'♀', color:'#FFB347'},
+  {name:'火星', glyph:'♂', color:'#E05040'},
+  {name:'木星', glyph:'♃', color:'#F0C040'},
+  {name:'土星', glyph:'♄', color:'#C8B070'},
+  {name:'天王星',glyph:'♅', color:'#40D0C0'},
+  {name:'海王星',glyph:'♆', color:'#6090E0'},
+  {name:'冥王星',glyph:'♇', color:'#A060D0'},
+];
+
+const ASPECT_DEFS = [
+  {name:'コンジャンクション', sym:'☌', angle:0,   orb:8,  color:'#FFD700'},
+  {name:'セクスタイル',       sym:'⚹', angle:60,  orb:6,  color:'#40C0A0'},
+  {name:'スクエア',           sym:'□', angle:90,  orb:8,  color:'#E05040'},
+  {name:'トライン',           sym:'△', angle:120, orb:8,  color:'#60C060'},
+  {name:'オポジション',       sym:'☍', angle:180, orb:8,  color:'#E080A0'},
+];
+
+// ─── Math helpers ─────────────────────────────────────────────────────────────
+const d2r = d => d * Math.PI / 180;
+const r2d = r => r * 180 / Math.PI;
+const rev = x => ((x % 360) + 360) % 360;
+
+// ─── Julian Day ───────────────────────────────────────────────────────────────
+function julianDay(year, month, day, hour, min) {
+  const ut = hour + min / 60;
+  if (month <= 2) { year--; month += 12; }
+  const A = Math.floor(year / 100);
+  const B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (year + 4716)) + Math.floor(30.6001 * (month + 1)) + day + ut / 24 + B - 1524.5;
+}
+
+// ─── Kepler solver ────────────────────────────────────────────────────────────
+function solveKepler(M_deg, e) {
+  const M = d2r(M_deg);
+  let E = M;
+  for (let i = 0; i < 15; i++) E -= (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+  return r2d(E);
+}
+
+// ─── Heliocentric rectangular coords ─────────────────────────────────────────
+function helioRect(N, i, w, a, e, M_deg) {
+  const E = solveKepler(M_deg, e);
+  const xv = a * (Math.cos(d2r(E)) - e);
+  const yv = a * (Math.sqrt(1 - e * e) * Math.sin(d2r(E)));
+  const v  = r2d(Math.atan2(yv, xv));
+  const r  = Math.sqrt(xv * xv + yv * yv);
+  const vw = d2r(v + w), Nr = d2r(N), ir = d2r(i);
+  return {
+    x: r * (Math.cos(Nr) * Math.cos(vw) - Math.sin(Nr) * Math.sin(vw) * Math.cos(ir)),
+    y: r * (Math.sin(Nr) * Math.cos(vw) + Math.cos(Nr) * Math.sin(vw) * Math.cos(ir)),
+    z: r * Math.sin(vw) * Math.sin(ir),
+  };
+}
+
+// ─── Earth's heliocentric position ───────────────────────────────────────────
+function earthPos(d) {
+  const w = rev(282.9404 + 4.70935e-5 * d);
+  const M = rev(356.0470 + 0.9856002585 * d);
+  const e = 0.016709 - 1.151e-9 * d;
+  const E = solveKepler(M, e);
+  const xv = Math.cos(d2r(E)) - e;
+  const yv = Math.sqrt(1 - e * e) * Math.sin(d2r(E));
+  const v = r2d(Math.atan2(yv, xv));
+  const r = Math.sqrt(xv * xv + yv * yv);
+  const ls = rev(v + w);
+  return { x: r * Math.cos(d2r(ls + 180)), y: r * Math.sin(d2r(ls + 180)), z: 0 };
+}
+
+// ─── All planet longitudes ────────────────────────────────────────────────────
+function allPlanetLongitudes(jd) {
+  const d = jd - 2451543.5; // days from J2000 epoch (Schlyter's reference)
+  const ep = earthPos(d);
+
+  function geo(N, i, w, a, e, M) {
+    const h = helioRect(N, i, w, a, e, rev(M));
+    return rev(r2d(Math.atan2(h.y - ep.y, h.x - ep.x)));
+  }
+
+  // Sun
+  const w_sun = rev(282.9404 + 4.70935e-5 * d);
+  const M_sun = rev(356.0470 + 0.9856002585 * d);
+  const e_sun = 0.016709 - 1.151e-9 * d;
+  const E_sun = solveKepler(M_sun, e_sun);
+  const xv_s = Math.cos(d2r(E_sun)) - e_sun;
+  const yv_s = Math.sqrt(1 - e_sun * e_sun) * Math.sin(d2r(E_sun));
+  const v_sun = r2d(Math.atan2(yv_s, xv_s));
+  const sun = rev(v_sun + w_sun);
+
+  // Moon (geocentric, simplified)
+  const N_m = rev(125.1228 - 0.0529538083 * d);
+  const w_m = rev(318.0634 + 0.1643573223 * d);
+  const M_m = rev(115.3654 + 13.0649929509 * d);
+  const e_m = 0.054900, i_m = 5.1454, a_m = 60.2666;
+  const E_m = solveKepler(M_m, e_m);
+  const xv_m = a_m * (Math.cos(d2r(E_m)) - e_m);
+  const yv_m = a_m * (Math.sqrt(1 - e_m * e_m) * Math.sin(d2r(E_m)));
+  const v_m = r2d(Math.atan2(yv_m, xv_m));
+  const vw_m = d2r(v_m + w_m), Nr_m = d2r(N_m), ir_m = d2r(i_m);
+  const xg_m = Math.cos(Nr_m)*Math.cos(vw_m) - Math.sin(Nr_m)*Math.sin(vw_m)*Math.cos(ir_m);
+  const yg_m = Math.sin(Nr_m)*Math.cos(vw_m) + Math.cos(Nr_m)*Math.sin(vw_m)*Math.cos(ir_m);
+  const moon = rev(r2d(Math.atan2(yg_m, xg_m)));
+
+  const mercury = geo(rev(48.3313+3.24587e-5*d), 7.0047, rev(29.1241+1.01444e-5*d), 0.387098, 0.205635, 168.6562+4.0923344368*d);
+  const venus   = geo(rev(76.6799+2.46590e-5*d), 3.3946, rev(54.8910+1.38374e-5*d), 0.723330, 0.006773, 48.0052+1.6021302244*d);
+  const mars    = geo(rev(49.5574+2.11081e-5*d), 1.8497, rev(286.5016+2.92961e-5*d),1.523688, 0.093405, 18.6021+0.5240207766*d);
+  const jupiter = geo(rev(100.4542+2.76854e-5*d),1.3030, rev(273.8777+1.64505e-5*d),5.20256,  0.048498, 19.8950+0.0830853001*d);
+  const saturn  = geo(rev(113.6634+2.38980e-5*d),2.4886, rev(339.3939+2.97661e-5*d),9.55475,  0.055546, 316.9670+0.0334442282*d);
+  const uranus  = geo(rev(74.0005+1.3978e-5*d),  0.7733, rev(96.6612+3.0565e-5*d),  19.18171, 0.047318, 142.5905+0.011725806*d);
+  const neptune = geo(rev(131.7806+3.0173e-5*d), 1.7700, rev(272.8461-6.027e-6*d),  30.05826, 0.008606, 260.2471+0.005995147*d);
+  const pluto   = geo(rev(110.3069+1.3900e-5*d), 17.140, rev(113.7650+2.1507e-5*d), 39.48168, 0.248808, 14.8244+0.003974*d);
+
+  return [sun, moon, mercury, venus, mars, jupiter, saturn, uranus, neptune, pluto];
+}
+
+// ─── ASC & MC ─────────────────────────────────────────────────────────────────
+function computeAngles(jd, lat, lon) {
+  const d = jd - 2451545.0;
+  const GMST = rev(280.46061837 + 360.98564736629 * d);
+  const LMST = rev(GMST + lon);
+  const eps  = 23.439292 - 3.563e-7 * d;
+  const L = d2r(LMST), e = d2r(eps), phi = d2r(lat);
+  // ASC
+  const y_a = -Math.cos(L);
+  const x_a = Math.sin(e) * Math.tan(phi) + Math.cos(e) * Math.sin(L);
+  let ASC = r2d(Math.atan2(y_a, x_a));
+  if (Math.cos(L) < 0) ASC += 180;
+  ASC = rev(ASC);
+  // MC
+  let MC = r2d(Math.atan2(Math.sin(L), Math.cos(e) * Math.cos(L)));
+  MC = rev(MC);
+  return { ASC, MC };
+}
+
+// ─── House (Equal) ───────────────────────────────────────────────────────────
+function houseOf(lon, ASC) {
+  return Math.floor(rev(lon - ASC) / 30) + 1;
+}
+
+// ─── Aspects ──────────────────────────────────────────────────────────────────
+function findAspects(lons) {
+  const results = [];
+  for (let i = 0; i < lons.length; i++) {
+    for (let j = i + 1; j < lons.length; j++) {
+      let diff = Math.abs(lons[i] - lons[j]) % 360;
+      if (diff > 180) diff = 360 - diff;
+      for (const asp of ASPECT_DEFS) {
+        if (Math.abs(diff - asp.angle) <= asp.orb) {
+          results.push({ p1: i, p2: j, asp, orb: Math.abs(diff - asp.angle).toFixed(1) });
+          break;
+        }
+      }
+    }
+  }
+  return results;
+}
+
+// ─── Chart SVG ───────────────────────────────────────────────────────────────
+const CX = 260, CY = 260;
+const R_OUT = 248, R_ZIN = 212, R_HIN = 170, R_PLN = 148, R_ASP = 100;
+
+function eclPt(lambda, asc, r) {
+  const ang = d2r((180 + asc - lambda + 720) % 360);
+  return { x: CX + r * Math.cos(ang), y: CY - r * Math.sin(ang) };
+}
+
+function arcPath(lam1, lam2, asc, r) {
+  const p1 = eclPt(lam1, asc, r);
+  const p2 = eclPt(lam2, asc, r);
+  return `M ${p1.x.toFixed(2)} ${p1.y.toFixed(2)} A ${r} ${r} 0 0 0 ${p2.x.toFixed(2)} ${p2.y.toFixed(2)}`;
+}
+
+function buildChart(lons, ASC, MC) {
+  let svg = `<svg viewBox="0 0 520 520" xmlns="http://www.w3.org/2000/svg" style="background:#04060f;border-radius:50%">`;
+
+  // Zodiac ring segments
+  for (let s = 0; s < 12; s++) {
+    const lam1 = s * 30, lam2 = lam1 + 30;
+    const sg = SIGNS[s];
+    const elemColor = ELEMS[sg.elem].color;
+    const p1_out = eclPt(lam1, ASC, R_OUT), p2_out = eclPt(lam2, ASC, R_OUT);
+    const p1_in  = eclPt(lam1, ASC, R_ZIN), p2_in  = eclPt(lam2, ASC, R_ZIN);
+    svg += `<path d="M ${p1_in.x.toFixed(1)} ${p1_in.y.toFixed(1)} A ${R_ZIN} ${R_ZIN} 0 0 0 ${p2_in.x.toFixed(1)} ${p2_in.y.toFixed(1)} L ${p2_out.x.toFixed(1)} ${p2_out.y.toFixed(1)} A ${R_OUT} ${R_OUT} 0 0 1 ${p1_out.x.toFixed(1)} ${p1_out.y.toFixed(1)} Z" fill="${elemColor}" opacity="0.18"/>`;
+    // Sign glyph
+    const mid = eclPt(lam1 + 15, ASC, (R_OUT + R_ZIN) / 2);
+    svg += `<text x="${mid.x.toFixed(1)}" y="${mid.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${elemColor}" font-size="14" font-family="sans-serif">${sg.glyph}</text>`;
+    // Degree ticks & boundary lines
+    const bl_in = eclPt(lam1, ASC, R_ZIN), bl_out = eclPt(lam1, ASC, R_OUT);
+    svg += `<line x1="${bl_in.x.toFixed(1)}" y1="${bl_in.y.toFixed(1)}" x2="${bl_out.x.toFixed(1)}" y2="${bl_out.y.toFixed(1)}" stroke="rgba(255,255,255,0.25)" stroke-width="1"/>`;
+  }
+
+  // Outer circle & zodiac inner circle
+  svg += `<circle cx="${CX}" cy="${CY}" r="${R_OUT}" fill="none" stroke="rgba(64,128,216,0.5)" stroke-width="1.5"/>`;
+  svg += `<circle cx="${CX}" cy="${CY}" r="${R_ZIN}" fill="none" stroke="rgba(64,128,216,0.3)" stroke-width="1"/>`;
+  svg += `<circle cx="${CX}" cy="${CY}" r="${R_HIN}" fill="none" stroke="rgba(64,128,216,0.2)" stroke-width="1"/>`;
+  svg += `<circle cx="${CX}" cy="${CY}" r="${R_ASP}" fill="none" stroke="rgba(64,128,216,0.1)" stroke-width="1"/>`;
+
+  // House lines (Equal House from ASC)
+  for (let h = 0; h < 12; h++) {
+    const hCusp = rev(ASC + h * 30);
+    const p_in  = eclPt(hCusp, ASC, R_ASP);
+    const p_out = eclPt(hCusp, ASC, R_ZIN);
+    const isAxis = h % 3 === 0;
+    svg += `<line x1="${p_in.x.toFixed(1)}" y1="${p_in.y.toFixed(1)}" x2="${p_out.x.toFixed(1)}" y2="${p_out.y.toFixed(1)}" stroke="${isAxis ? 'rgba(201,168,76,0.6)' : 'rgba(255,255,255,0.12)'}" stroke-width="${isAxis ? 1.5 : 0.8}"/>`;
+    if (h > 0) {
+      // House number
+      const hn_pt = eclPt(rev(ASC + h * 30 + 15), ASC, (R_HIN + R_ASP) / 2);
+      svg += `<text x="${hn_pt.x.toFixed(1)}" y="${hn_pt.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="rgba(100,130,200,0.7)" font-size="9" font-family="sans-serif">${h + 1}</text>`;
+    }
+  }
+  // H1 label (ASC)
+  const h1_pt = eclPt(rev(ASC + 15), ASC, (R_HIN + R_ASP) / 2);
+  svg += `<text x="${h1_pt.x.toFixed(1)}" y="${h1_pt.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="rgba(100,130,200,0.7)" font-size="9" font-family="sans-serif">1</text>`;
+
+  // ASC / DSC / MC / IC labels
+  const asc_pt = eclPt(ASC + 0.5, ASC, R_ZIN - 10);
+  svg += `<text x="${asc_pt.x.toFixed(1)}" y="${asc_pt.y.toFixed(1)}" fill="#c9a84c" font-size="9" font-family="sans-serif" text-anchor="middle">AC</text>`;
+  const mc_pt = eclPt(MC + 0.5, ASC, R_ZIN - 10);
+  svg += `<text x="${mc_pt.x.toFixed(1)}" y="${mc_pt.y.toFixed(1)}" fill="#c9a84c" font-size="9" font-family="sans-serif" text-anchor="middle">MC</text>`;
+
+  // Aspect lines
+  const aspects = findAspects(lons);
+  for (const asp of aspects) {
+    const p1 = eclPt(lons[asp.p1], ASC, R_ASP - 4);
+    const p2 = eclPt(lons[asp.p2], ASC, R_ASP - 4);
+    svg += `<line x1="${p1.x.toFixed(1)}" y1="${p1.y.toFixed(1)}" x2="${p2.x.toFixed(1)}" y2="${p2.y.toFixed(1)}" stroke="${asp.asp.color}" stroke-width="0.8" opacity="0.5"/>`;
+  }
+
+  // Planets (handle clustering)
+  const placed = [];
+  for (let p = 0; p < lons.length; p++) {
+    const lon = lons[p];
+    const pl = PLANETS[p];
+    let r = R_PLN;
+    // Simple anti-overlap: shift radius if nearby
+    for (const prev of placed) {
+      let diff = Math.abs(lon - prev.lon) % 360;
+      if (diff > 180) diff = 360 - diff;
+      if (diff < 8) r -= 18;
+    }
+    placed.push({ lon, r });
+    const pt = eclPt(lon, ASC, r);
+    // Tick line to house ring
+    const pt_in = eclPt(lon, ASC, R_HIN);
+    svg += `<line x1="${pt.x.toFixed(1)}" y1="${pt.y.toFixed(1)}" x2="${pt_in.x.toFixed(1)}" y2="${pt_in.y.toFixed(1)}" stroke="${pl.color}" stroke-width="0.6" opacity="0.4"/>`;
+    // Planet glyph circle
+    svg += `<circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="12" fill="#04060f" stroke="${pl.color}" stroke-width="1.2"/>`;
+    svg += `<text x="${pt.x.toFixed(1)}" y="${pt.y.toFixed(1)}" text-anchor="middle" dominant-baseline="central" fill="${pl.color}" font-size="12" font-family="sans-serif">${pl.glyph}</text>`;
+  }
+
+  svg += `</svg>`;
+  return svg;
+}
+
+// ─── Sign descriptions ────────────────────────────────────────────────────────
+const SIGN_DESC = {
+  sun: [
+    '強い意志と開拓精神を持ち、先頭に立つ力があります。情熱的で行動力があり、新しいことへの挑戦を恐れません。',
+    '安定と美を愛し、粘り強く物事をやり遂げます。五感が豊かで、心地よい環境を大切にします。',
+    '好奇心旺盛で知識欲が高く、コミュニケーション能力に優れています。柔軟な思考で様々な視点を持ちます。',
+    '深い感受性と共感力を持ち、家族や愛する人を大切にします。直感が鋭く、人の心の機微を読み取ります。',
+    '華やかな存在感と創造力があり、人を惹きつける魅力があります。寛大で、周囲に喜びと温かさをもたらします。',
+    '分析力と完璧主義的な姿勢で、細部まで丁寧に物事を進めます。実用的で誠実、高い知性を持ちます。',
+    'バランスと美的センスを重んじ、対人関係において公平さを大切にします。社交的で調和を求める平和主義者です。',
+    '深い洞察力と探究心を持ち、物事の本質を見抜きます。強烈な意志と変容の力を秘めた神秘的な存在です。',
+    '自由と探求を愛し、哲学的な思考と楽観的な精神で人生を冒険します。知識の拡大と異文化への関心が高い。',
+    '責任感が強く、粘り強い努力で目標を達成します。現実的な判断力と高い野心で確かな地位を築きます。',
+    '独創的な発想と人道主義的な精神を持ちます。未来志向で革新的、自由と平等を重んじる個性派です。',
+    '豊かな想像力と深い共感力を持ちます。芸術的感性が高く、スピリチュアルな世界への関心も深い。',
+  ],
+  moon: [
+    '感情は情熱的で即興的。感じたことをすぐ表現し、刺激と変化を求めます。',
+    '感情は安定していて粘り強い。安心感と物質的な豊かさに心地よさを感じます。',
+    '感情は知的で変化が速い。情報とコミュニケーションに心の安らぎを求めます。',
+    '感情は深く繊細で保護本能が強い。家庭と家族に深いつながりと安らぎを感じます。',
+    '感情は温かく劇的で承認を必要とします。愛情と創造的な表現に喜びを見出します。',
+    '感情は分析的で実用的。安心するために物事を整理し、役に立つことで心が落ち着きます。',
+    '感情は調和を求め、単独では不安になりやすい。人との関係に心の安定を見出します。',
+    '感情は深く強烈で変容を伴う。感情を内に秘めながらも深い絆と信頼を求めます。',
+    '感情は自由で楽観的。制限を嫌い、意味と目的に喜びを感じます。',
+    '感情は制御され現実的。感情を見せることは少ないが、内では深い責任感を持ちます。',
+    '感情は独立的で非個人的。感情よりも理想と正義を大切にする傾向があります。',
+    '感情は共感的で境界があいまい。他者の感情に強く影響され、霊的な感受性も持ちます。',
+  ],
+  asc: [
+    '活動的でエネルギッシュな第一印象。積極的で直接的な姿勢が人を引きつけます。',
+    '落ち着きがあり信頼感を与えます。ゆったりとした雰囲気と審美的な魅力があります。',
+    '機知に富んで話題が豊富。若々しくフレンドリーな雰囲気が印象的です。',
+    '優しく親しみやすい印象。人の心に寄り添う温かさと保護的な雰囲気があります。',
+    '堂々として華やかな存在感。自信に満ちた姿勢と温かみが人を惹きつけます。',
+    '整然として清潔感がある印象。謙虚で誠実、細やかな気遣いが伝わります。',
+    '洗練されていてエレガント。バランスの取れた外見と友好的な態度が印象的です。',
+    '深みと神秘的な魅力がある印象。強い眼力と落ち着いた存在感が独特の雰囲気を醸します。',
+    '開放的で楽しそうな印象。冒険的な雰囲気と哲学的な深みが感じられます。',
+    '真面目で信頼感のある印象。控えめながらも有能さが伝わる風格があります。',
+    '独特でクールな印象。革新的なセンスと人道的なオーラが個性を際立たせます。',
+    '夢見るような柔らかい印象。繊細な美しさと神秘的な雰囲気が漂います。',
+  ],
+};
+
+// ─── Element balance ──────────────────────────────────────────────────────────
+function elemBalance(lons, ASC) {
+  const counts = { fire: 0, earth: 0, air: 0, water: 0 };
+  const allLons = [...lons, ASC];
+  for (const lon of allLons) {
+    const sign = Math.floor(lon / 30) % 12;
+    counts[SIGNS[sign].elem]++;
+  }
+  return counts;
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
+function calculate() {
+  const raw = document.getElementById('birthInput').value.trim();
+  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
+  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  const year  = parseInt(parts[1]);
+  const month = parseInt(parts[2]);
+  const day   = parseInt(parts[3]);
+  if (year < 1800 || year > 2100 || month < 1 || month > 12 || day < 1 || day > 31) {
+    alert('正しい日付を入力してください'); return;
+  }
+  const timeVal = document.getElementById('timeInput').value || '12:00';
+  const cityIdx = parseInt(document.getElementById('citySelect').value);
+  const [hour, min] = timeVal.split(':').map(Number);
+  const city = CITIES[cityIdx];
+
+  const jd = julianDay(year, month, day, hour, min);
+  const lons = allPlanetLongitudes(jd);
+  const { ASC, MC } = computeAngles(jd, city.lat, city.lon);
+  const aspects = findAspects(lons);
+
+  // Chart
+  document.getElementById('chartWrap').innerHTML = buildChart(lons, ASC, MC);
+
+  // Planet table
+  let tbl = `<table><thead><tr><th>天体</th><th>星座</th><th>度数</th><th>ハウス</th></tr></thead><tbody>`;
+  lons.forEach((lon, i) => {
+    const signIdx = Math.floor(lon / 30) % 12;
+    const deg = (lon % 30).toFixed(1);
+    const house = houseOf(lon, ASC);
+    const sg = SIGNS[signIdx];
+    tbl += `<tr><td><span class="glyph" style="color:${PLANETS[i].color}">${PLANETS[i].glyph}</span> ${PLANETS[i].name}</td><td><span style="color:${sg.color}">${sg.glyph} ${sg.name}</span></td><td>${deg}°</td><td>${house}室</td></tr>`;
+  });
+  // ASC/MC
+  const ascSign = SIGNS[Math.floor(ASC / 30) % 12];
+  const mcSign  = SIGNS[Math.floor(MC / 30) % 12];
+  tbl += `<tr><td style="color:#c9a84c">AC アセンダント</td><td><span style="color:${ascSign.color}">${ascSign.glyph} ${ascSign.name}</span></td><td>${(ASC % 30).toFixed(1)}°</td><td>1室</td></tr>`;
+  tbl += `<tr><td style="color:#c9a84c">MC ミッドヘブン</td><td><span style="color:${mcSign.color}">${mcSign.glyph} ${mcSign.name}</span></td><td>${(MC % 30).toFixed(1)}°</td><td>10室</td></tr>`;
+  tbl += `</tbody></table>`;
+  document.getElementById('planetTable').innerHTML = tbl;
+
+  // Aspects
+  let aspHtml = '';
+  if (aspects.length === 0) {
+    aspHtml = '<span style="color:var(--dim);font-size:0.85rem">主要アスペクトなし</span>';
+  } else {
+    for (const a of aspects) {
+      aspHtml += `<div class="aspect-tag"><span style="color:${a.asp.color}">${a.asp.sym}</span> <span style="color:${PLANETS[a.p1].color}">${PLANETS[a.p1].glyph}${PLANETS[a.p1].name}</span> — <span style="color:${PLANETS[a.p2].color}">${PLANETS[a.p2].glyph}${PLANETS[a.p2].name}</span> <span style="color:var(--dim);font-size:0.75rem">(±${a.orb}°)</span></div>`;
+    }
+  }
+  document.getElementById('aspectsGrid').innerHTML = aspHtml;
+
+  // Element balance
+  const elems = elemBalance(lons, ASC);
+  const total  = Object.values(elems).reduce((a, b) => a + b, 0);
+  let ebHtml = '';
+  for (const [k, v] of Object.entries(elems)) {
+    const el = ELEMS[k];
+    const pct = (v / total * 100).toFixed(1);
+    ebHtml += `<div class="elem-row">
+      <div class="elem-label" style="color:${el.color}">${el.label}</div>
+      <div class="elem-bar-wrap"><div class="elem-bar" style="width:0%;background:${el.bg}" data-target="${pct}"></div></div>
+      <div class="elem-count">${v}</div>
+    </div>`;
+  }
+  document.getElementById('elemBars').innerHTML = ebHtml;
+
+  // Interpretations
+  const sunSign  = Math.floor(lons[0] / 30) % 12;
+  const moonSign = Math.floor(lons[1] / 30) % 12;
+  const ascSign2 = Math.floor(ASC / 30) % 12;
+  let interpHtml = `
+    <div class="interp-card">
+      <h3>☉ 太陽星座 — 本質・自己表現</h3>
+      <div class="sign-name"><span style="color:${SIGNS[sunSign].color}">${SIGNS[sunSign].glyph}</span> ${SIGNS[sunSign].name}</div>
+      <p>${SIGN_DESC.sun[sunSign]}</p>
+    </div>
+    <div class="interp-card">
+      <h3>☽ 月星座 — 感情・本能</h3>
+      <div class="sign-name"><span style="color:${SIGNS[moonSign].color}">${SIGNS[moonSign].glyph}</span> ${SIGNS[moonSign].name}</div>
+      <p>${SIGN_DESC.moon[moonSign]}</p>
+    </div>
+    <div class="interp-card">
+      <h3>AC アセンダント — 外見・第一印象</h3>
+      <div class="sign-name"><span style="color:${SIGNS[ascSign2].color}">${SIGNS[ascSign2].glyph}</span> ${SIGNS[ascSign2].name}</div>
+      <p>${SIGN_DESC.asc[ascSign2]}</p>
+    </div>
+    <div class="interp-card">
+      <h3>総合メッセージ</h3>
+      <p>太陽は${SIGNS[sunSign].name}、月は${SIGNS[moonSign].name}、アセンダントは${SIGNS[ascSign2].name}という構成です。
+      あなたの本質的なエネルギーは${SIGNS[sunSign].name}の${SIGNS[sunSign].en}として輝き、
+      内なる感情世界は${SIGNS[moonSign].name}の感受性で彩られています。
+      世界に見せる顔は${SIGNS[ascSign2].name}の雰囲気を持ちながら、
+      内なる自己と外の世界を橋渡しする独自の物語を紡いでいます。
+      出生図に刻まれたこの星の配置は、あなただけの宇宙のシンボルです。</p>
+    </div>`;
+  document.getElementById('interpGrid').innerHTML = interpHtml;
+
+  // Show all sections
+  ['chartSection','tableSection','aspectSection','elemSection','interpSection'].forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+    void el.offsetWidth;
+    el.style.animationDelay = `${i * 0.08}s`;
+    el.classList.add('show');
+  });
+
+  // Animate bars
+  setTimeout(() => {
+    document.querySelectorAll('.elem-bar').forEach(b => { b.style.width = b.dataset.target + '%'; });
+  }, 200);
+
+  setTimeout(() => document.getElementById('chartSection').scrollIntoView({behavior:'smooth', block:'start'}), 150);
+}
+
+// ─── Init ─────────────────────────────────────────────────────────────────────
+(function init() {
+  const sel = document.getElementById('citySelect');
+  CITIES.forEach((c, i) => { const o = document.createElement('option'); o.value = i; o.textContent = c.name; sel.appendChild(o); });
+
+  const t = new Date();
+  document.getElementById('birthInput').value =
+    t.getFullYear() + '/' + (t.getMonth()+1) + '/' + t.getDate();
+})();
+
+document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+</script>
+</body>
+</html>

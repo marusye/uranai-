@@ -1,0 +1,41 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "numerology-tarot (Python HTTP Server)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8080", "--directory", "numerology-tarot"],
+      "port": 8080
+    },
+    {
+      "name": "shichusuimei (Python HTTP Server)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8081", "--directory", "shichusuimei"],
+      "port": 8081
+    },
+    {
+      "name": "horoscope (Python HTTP Server)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8082", "--directory", "horoscope"],
+      "port": 8082
+    },
+    {
+      "name": "maya (Python HTTP Server)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8083", "--directory", "maya"],
+      "port": 8083
+    },
+    {
+      "name": "doubutsu-uranai (Python HTTP Server)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8084", "--directory", "doubutsu-uranai"],
+      "port": 8084
+    },
+    {
+      "name": "tarot (Python HTTP Server)",
+      "runtimeExecutable": "python3",
+      "runtimeArgs": ["-m", "http.server", "8085", "--directory", "tarot"],
+      "port": 8085
+    }
+  ]
+}

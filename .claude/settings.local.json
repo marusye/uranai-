@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip3 install:*)",
+      "Bash(python3 create_notebooks.py)",
+      "Bash(osascript -e ':*)",
+      "Bash(chmod +x \"/Users/user/Desktop/数秘術タロット.command\" \"/Users/user/Desktop/四柱推命.command\")",
+      "Bash(chmod +x \"/Users/user/Desktop/マヤ暦占い.command\")",
+      "mcp__Claude_Preview__preview_start"
+    ]
+  }
+}

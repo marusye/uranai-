@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>動物占い</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700;900&family=Cinzel:wght@400;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #060a06; --dark: #0a120a; --card: #0e160c;
+      --gold: #c8a028; --green: #4a8c50; --earth: #8c6040;
+      --text: #e8e0d0; --dim: #708060;
+    }
+    body { background: var(--bg); color: var(--text); font-family: 'Noto Serif JP', serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; overflow-x: hidden; }
+    body::before { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at 20% 20%, rgba(74,140,80,0.07) 0%, transparent 55%), radial-gradient(ellipse at 80% 80%, rgba(140,96,64,0.07) 0%, transparent 55%); pointer-events: none; }
+
+    .container { position: relative; z-index: 1; width: 100%; max-width: 640px; padding: 2rem 1rem 4rem; display: flex; flex-direction: column; align-items: center; gap: 1.8rem; }
+
+    /* Header */
+    .header { text-align: center; }
+    .header h1 { font-family: 'Cinzel', serif; font-size: 2rem; letter-spacing: 0.12em; color: var(--gold); text-shadow: 0 0 30px rgba(200,160,40,0.4); }
+    .header h1 span { font-family: 'Noto Serif JP', serif; font-size: 1rem; letter-spacing: 0.3em; display: block; margin-top: 0.2rem; color: var(--dim); }
+    .animal-parade { font-size: 1.5rem; letter-spacing: 0.05em; margin: 0.8rem 0; opacity: 0.65; }
+    .header p { color: var(--dim); font-size: 0.8rem; letter-spacing: 0.1em; }
+
+    /* Input */
+    .input-section { background: var(--card); border: 1px solid rgba(200,160,40,0.3); border-radius: 16px; padding: 1.8rem; width: 100%; box-shadow: 0 0 40px rgba(74,140,80,0.07); }
+    .input-section label { display: block; font-size: 0.8rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
+    input[type="text"] { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,40,0.4); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 1rem; padding: 0.7rem 1rem; outline: none; transition: all 0.3s; }
+    input[type="text"]:focus { border-color: var(--gold); box-shadow: 0 0 12px rgba(200,160,40,0.3); }
+    .btn { display: block; width: 100%; margin-top: 1.2rem; background: linear-gradient(135deg, #2a5a2a, #4a8c50, #2a5a2a); border: 1px solid rgba(74,140,80,0.6); border-radius: 8px; color: #fff; cursor: pointer; font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.3em; padding: 0.75rem; transition: all 0.2s; box-shadow: 0 2px 20px rgba(74,140,80,0.3); }
+    .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 30px rgba(74,140,80,0.5); }
+
+    /* Sections */
+    .section { width: 100%; display: none; animation: fadeUp 0.5s ease both; }
+    .section.show { display: block; }
+    .section-title { text-align: center; font-size: 0.85rem; letter-spacing: 0.25em; color: var(--gold); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center; }
+    .section-title::before, .section-title::after { content: '◈'; font-size: 0.45rem; opacity: 0.7; }
+
+    /* Animal card */
+    .animal-card { border-radius: 20px; padding: 2.5rem 2rem; text-align: center; position: relative; overflow: hidden; border: 2px solid; width: 100%; }
+    .animal-card::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 20%, rgba(255,255,255,0.07) 0%, transparent 70%); }
+    .animal-emoji { font-size: 6rem; line-height: 1; margin-bottom: 1rem; filter: drop-shadow(0 0 20px currentColor); display: block; }
+    .animal-type-badge { display: inline-flex; align-items: center; padding: 0.25rem 1rem; border-radius: 20px; font-size: 0.75rem; border: 1px solid currentColor; margin-bottom: 0.7rem; letter-spacing: 0.1em; opacity: 0.8; }
+    .animal-name { font-size: 2.4rem; font-weight: 900; margin-bottom: 0.2rem; }
+    .animal-en { font-family: 'Cinzel', serif; font-size: 0.8rem; letter-spacing: 0.25em; opacity: 0.55; margin-bottom: 0.7rem; }
+    .animal-keyword { font-size: 1rem; letter-spacing: 0.2em; margin-bottom: 1rem; font-weight: 700; }
+    .animal-tagline { font-size: 0.88rem; opacity: 0.8; line-height: 1.9; color: var(--text); }
+
+    /* Info cards */
+    .info-card { background: var(--card); border: 1px solid rgba(200,160,40,0.2); border-radius: 12px; padding: 1.4rem; width: 100%; }
+    .info-card h3 { font-size: 0.78rem; color: var(--gold); letter-spacing: 0.15em; margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem; }
+    .info-card h3::before { content: '▸'; }
+    .info-card p { font-size: 0.88rem; line-height: 1.95; }
+
+    /* Traits */
+    .traits-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; width: 100%; }
+    .trait-card { background: var(--card); border-radius: 12px; padding: 1.2rem; }
+    .trait-card.strength { border: 1px solid rgba(74,140,80,0.4); }
+    .trait-card.weakness { border: 1px solid rgba(200,100,50,0.4); }
+    .trait-card h3 { font-size: 0.72rem; letter-spacing: 0.1em; margin-bottom: 0.7rem; }
+    .trait-card.strength h3 { color: #72c878; }
+    .trait-card.weakness h3 { color: #d87060; }
+    .trait-list { list-style: none; }
+    .trait-list li { font-size: 0.82rem; padding: 0.25rem 0; display: flex; align-items: flex-start; gap: 0.4rem; line-height: 1.5; }
+    .trait-card.strength .trait-list li::before { content: '◎'; color: #72c878; font-size: 0.6rem; margin-top: 0.25rem; flex-shrink: 0; }
+    .trait-card.weakness .trait-list li::before { content: '△'; color: #d87060; font-size: 0.6rem; margin-top: 0.25rem; flex-shrink: 0; }
+
+    /* Lucky */
+    .lucky-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+    .lucky-item { background: rgba(200,160,40,0.08); border: 1px solid rgba(200,160,40,0.3); border-radius: 8px; padding: 0.4rem 0.8rem; font-size: 0.82rem; }
+
+    /* Compatibility */
+    .compat-group { margin-bottom: 0.9rem; }
+    .compat-group:last-child { margin-bottom: 0; }
+    .compat-label { font-size: 0.7rem; color: var(--dim); letter-spacing: 0.1em; margin-bottom: 0.4rem; }
+    .compat-animals { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .compat-badge { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.7rem; border-radius: 20px; font-size: 0.8rem; }
+    .compat-badge.best { background: rgba(74,140,80,0.18); border: 1px solid rgba(74,140,80,0.5); color: #88d090; }
+    .compat-badge.good { background: rgba(200,160,40,0.12); border: 1px solid rgba(200,160,40,0.4); color: #c8a028; }
+    .compat-badge.caution { background: rgba(200,100,50,0.1); border: 1px solid rgba(200,100,50,0.35); color: #d88060; }
+
+    /* Message */
+    .message-card { width: 100%; background: linear-gradient(135deg, rgba(74,140,80,0.1), rgba(200,160,40,0.07)); border: 1px solid rgba(200,160,40,0.3); border-radius: 16px; padding: 2rem 1.8rem; text-align: center; }
+    .message-card .msg-emoji { font-size: 2.5rem; margin-bottom: 0.8rem; display: block; }
+    .message-card p { font-size: 0.92rem; line-height: 2.1; }
+
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+    footer { position: relative; z-index: 1; color: var(--dim); font-size: 0.72rem; text-align: center; padding-bottom: 2rem; letter-spacing: 0.08em; }
+  </style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <h1>動物占い <span>ANIMAL FORTUNE</span></h1>
+    <div class="animal-parade">🦁 🐯 🐈‍⬛ 🐺 🐨 🧸 🐘 🐑 🐒 🦄 🐆 🦝</div>
+    <p>生年月日があなたの動物キャラクターを明かす</p>
+  </div>
+
+  <div class="input-section">
+    <form onsubmit="calculate(); return false;">
+      <label>生年月日を入力してください</label>
+      <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+      <button type="submit" class="btn">動物を見つける 🔍</button>
+    </form>
+  </div>
+
+  <div class="section" id="animalSection">
+    <div id="animalCard"></div>
+  </div>
+
+  <div class="section" id="personalitySection">
+    <div class="info-card" id="personalityCard"></div>
+  </div>
+
+  <div class="section" id="traitsSection">
+    <div class="traits-grid" id="traitsGrid"></div>
+  </div>
+
+  <div class="section" id="loveworkSection">
+    <div style="display:flex;flex-direction:column;gap:0.8rem">
+      <div class="info-card" id="loveCard"></div>
+      <div class="info-card" id="workCard"></div>
+    </div>
+  </div>
+
+  <div class="section" id="luckySection">
+    <div class="section-title">ラッキー情報</div>
+    <div class="info-card" id="luckyCard"></div>
+  </div>
+
+  <div class="section" id="compatSection">
+    <div class="section-title">他の動物との相性</div>
+    <div class="info-card" id="compatCard"></div>
+  </div>
+
+  <div class="section" id="messageSection">
+    <div class="message-card" id="messageCard"></div>
+  </div>
+
+</div>
+<footer>動物占い · 生年月日から読み解くあなたの動物キャラクター</footer>
+
+<script>
+const ANIMALS = [
+  {
+    id:1, name:'ライオン', emoji:'🦁', en:'Lion',
+    color:'#c89020', bg:'rgba(200,144,32,0.12)',
+    dayName:'太陽のライオン', nightName:'月夜のライオン',
+    keyword:'誇り高き王者',
+    tagline:'生まれながらのリーダー。堂々とした存在感で周囲を惹きつけます。',
+    personality:'誇り高く堂々とした存在感を持つ、生まれながらのリーダー。強い意志と高い理想を掲げ、一度決めたことは最後までやり遂げる粘り強さがあります。正直で誠実、曲がったことが大嫌い。周囲から自然と尊敬を集め、頼られる存在です。',
+    strengths:['リーダーシップ','決断力','誠実さ','勇気','高い理想'],
+    weaknesses:['頑固','プライドが高い','妥協が苦手'],
+    love:'情熱的で一途な恋愛をします。愛する人のためなら何でもできる献身家。自分のプライドを尊重してくれる相手でないと長続きしません。',
+    work:'リーダー・管理職・経営者・政治家など人の上に立つ仕事で才能を発揮。責任ある立場を任されるほど本領を発揮します。',
+    lucky_color:'ゴールド・ロイヤルブルー', lucky_number:1, lucky_item:'王冠モチーフのアクセサリー', lucky_day:'日曜日',
+    best:[10,7], good:[4,9], caution:[3,6],
+    message:'王者の責任を忘れずに。あなたの強さは、周りの人を守るためにあります。自分の誇りを大切にしながら、時には柔らかさも見せてみて。'
+  },
+  {
+    id:2, name:'虎', emoji:'🐯', en:'Tiger',
+    color:'#d46020', bg:'rgba(212,96,32,0.12)',
+    dayName:'炎の虎', nightName:'闇夜の虎',
+    keyword:'情熱の勇者',
+    tagline:'燃えるような情熱と行動力。前へ前へと突き進む勇者。',
+    personality:'燃えるような情熱と類まれな行動力を持つ勇者タイプ。思い立ったらすぐ行動、躊躇いなく前へ進みます。大胆で豪快、スケールの大きな夢を追いかけます。感情豊かで喜怒哀楽をストレートに表現する正直者。その熱量は周囲を巻き込み、ともに動かす力を持ちます。',
+    strengths:['行動力','情熱','大胆さ','正直さ','エネルギッシュ'],
+    weaknesses:['衝動的','飽きっぽい','後先を考えない'],
+    love:'恋愛も全力投球。猛烈にアプローチし、情熱的に愛します。熱しやすく冷めやすい面も。同じ熱量で向き合ってくれる相手が最高。',
+    work:'スポーツ選手・起業家・営業職・冒険家など、体と情熱を使う仕事で実力を発揮。デスクワークより現場で輝きます。',
+    lucky_color:'オレンジ・炎のような赤', lucky_number:3, lucky_item:'スポーツアイテム・炎モチーフ', lucky_day:'火曜日',
+    best:[8,11], good:[1,5], caution:[4,12],
+    message:'その情熱は最大の武器。でも時には立ち止まって、深呼吸を。勢いだけでなく方向性も大切にすることで、あなたの夢はもっと輝きます。'
+  },
+  {
+    id:3, name:'黒ヒョウ', emoji:'🐈‍⬛', en:'Black Panther',
+    color:'#9050d0', bg:'rgba(144,80,208,0.12)',
+    dayName:'昼の黒ヒョウ', nightName:'闇の黒ヒョウ',
+    keyword:'神秘の孤高者',
+    tagline:'誰にも読めない深い魅力。静かに輝く孤高の存在。',
+    personality:'神秘的な魅力と鋭い感受性を持つ、一匹狼的な存在。多くを語らないがゆえに、かえって人を惹きつけます。独自の美意識と世界観を持ち、妥協のないこだわりがあります。直感力が鋭く、人の本質を見抜く力があります。一度信頼を置いた相手には深い絆を結びます。',
+    strengths:['神秘的魅力','鋭い直感','独自の美意識','深い絆','集中力'],
+    weaknesses:['孤独になりがち','気難しい','秘密主義'],
+    love:'恋愛は慎重で、なかなか心を開きません。でも一度愛したら深く激しい愛情を注ぎます。自分の世界を理解してくれる相手を求めています。',
+    work:'アーティスト・デザイナー・研究者・探偵など、独自の感性や洞察力を活かせる仕事で才能が開花します。',
+    lucky_color:'ディープパープル・ブラック', lucky_number:8, lucky_item:'香水・神秘的なアクセサリー', lucky_day:'土曜日',
+    best:[4,9], good:[1,10], caution:[7,8],
+    message:'あなたの神秘性は唯一無二の魅力。心の扉を少しずつ開いていくことで、かけがえない出会いが生まれます。孤独を愛しながらも、繋がる勇気を。'
+  },
+  {
+    id:4, name:'狼', emoji:'🐺', en:'Wolf',
+    color:'#5080b8', bg:'rgba(80,128,184,0.12)',
+    dayName:'蒼天の狼', nightName:'月の狼',
+    keyword:'義侠の孤狼',
+    tagline:'強い信念と仲間への深い絆。誇り高き孤高の狼。',
+    personality:'強い信念と義侠心を持つ、誇り高いキャラクター。一見クールで近寄りがたい印象ですが、仲間と認めた相手には深い愛情と忠誠心を示します。自分の信念は絶対に曲げない強さを持ちますが、それが頑固さとして映ることも。正義感が強く、弱い者を守るために力を使います。',
+    strengths:['強い信念','義侠心','仲間への忠誠','冷静な判断','正義感'],
+    weaknesses:['頑固','こだわりが強い','孤立しやすい'],
+    love:'愛する人には深く一途。一度愛したら何があっても守り抜きます。パートナーへの要求が高く、同じ価値観を共有できる相手を求めています。',
+    work:'警察官・弁護士・研究者・職人など、信念を持って取り組める専門職で真価を発揮。妥協のない仕事ぶりが評価されます。',
+    lucky_color:'スチールブルー・シルバー', lucky_number:7, lucky_item:'月モチーフのアクセサリー', lucky_day:'月曜日',
+    best:[3,6], good:[11,7], caution:[2,9],
+    message:'信念を持って生きるあなたは本当に強い。時には人に頼ることも勇気のひとつ。仲間を信じて手を差し伸べることで、あなたの世界はさらに豊かになります。'
+  },
+  {
+    id:5, name:'コアラ', emoji:'🐨', en:'Koala',
+    color:'#5a9860', bg:'rgba(90,152,96,0.12)',
+    dayName:'木漏れ日のコアラ', nightName:'星空のコアラ',
+    keyword:'のんびり癒し系',
+    tagline:'マイペースで癒し系。周りをほっこりさせる愛嬌の持ち主。',
+    personality:'のんびりとしたマイペースな性格で、周りをほっこりと癒す愛嬌の持ち主。争いが嫌いで平和主義者。でも内心はしっかりとした考えを持っており、安心感とともに深い知恵を宿しています。好きなことへの集中力は抜群で、自分のペースで着実に物事を進める力があります。',
+    strengths:['癒し力','平和主義','集中力','安定感','マイペース'],
+    weaknesses:['行動が遅い','優柔不断','受け身になりがち'],
+    love:'恋愛は受け身で、積極的なアプローチが苦手。でも一緒にいると自然と温かい空気が流れ、相手を安心させます。安定した関係をとても大切にします。',
+    work:'保育士・医療関係・自然関係・職人など、ゆっくり丁寧に取り組める仕事で力を発揮。チームの安心感を生み出す存在になります。',
+    lucky_color:'アースグリーン・ナチュラルベージュ', lucky_number:5, lucky_item:'アロマグッズ・ナチュラルアイテム', lucky_day:'水曜日',
+    best:[8,12], good:[1,6], caution:[2,11],
+    message:'あなたのペースが、実はいちばん正しいのかもしれない。焦らなくていい。自分らしくのんびりと進む中に、たくさんの幸せが宿っています。'
+  },
+  {
+    id:6, name:'子守熊', emoji:'🧸', en:'Bear',
+    color:'#c07830', bg:'rgba(192,120,48,0.12)',
+    dayName:'森の子守熊', nightName:'冬眠前の子守熊',
+    keyword:'包容力の大きな守護者',
+    tagline:'大きな愛で周りを包む。誰もが安心できる心の拠り所。',
+    personality:'大きな包容力と温かさで周囲を包み込む、心の拠り所となる存在。面倒見がよく、困っている人を放っておけない優しい性格。家族や仲間をとても大切にし、その幸せのためなら力を惜しみません。感情が豊かで共感力が高く、人の気持ちをよく理解します。',
+    strengths:['包容力','温かさ','面倒見','共感力','家族愛'],
+    weaknesses:['自分を後回しにしがち','八方美人','断るのが苦手'],
+    love:'愛情深く、パートナーを大切に包み込みます。相手の幸せを自分の幸せと感じる献身的な恋愛スタイル。でも自分を犠牲にしすぎないよう注意が必要。',
+    work:'医師・教師・ケアワーカー・シェフなど、人の世話をしたり人を喜ばせる仕事に向いています。チームを支える縁の下の力持ち。',
+    lucky_color:'ハニーブラウン・ウォームベージュ', lucky_number:6, lucky_item:'ぬいぐるみ・ふかふかのもの', lucky_day:'木曜日',
+    best:[4,12], good:[5,8], caution:[1,11],
+    message:'人に与えてきたその温かさを、自分自身にも向けてあげて。あなたが幸せでいることが、周りの人の幸せにも繋がっています。'
+  },
+  {
+    id:7, name:'象', emoji:'🐘', en:'Elephant',
+    color:'#7080a8', bg:'rgba(112,128,168,0.12)',
+    dayName:'大地の象', nightName:'記憶の象',
+    keyword:'誠実な知の巨人',
+    tagline:'揺るぎない誠実さと深い知性。信頼の象徴。',
+    personality:'揺るぎない誠実さと深い知性を持つ、信頼の象徴。記憶力と観察力が抜群で、細かいことまでよく気がつきます。責任感が強く、任されたことは必ずやり遂げます。感情よりも理性を大切にし、冷静に物事を判断。長期的な視野を持ち、じっくりと着実に目標へ向かいます。',
+    strengths:['誠実さ','責任感','記憶力','観察力','忍耐力'],
+    weaknesses:['頑固','変化が苦手','感情表現が苦手'],
+    love:'恋愛は慎重で時間がかかりますが、一度決めたら長く深い関係を築きます。誠実さと安定感が最大の魅力。浮気は絶対にしません。',
+    work:'会計士・法律家・医師・研究者など、正確さと誠実さが求められる専門職で実力を発揮。長期プロジェクトを着実に進めます。',
+    lucky_color:'スレートグレー・ネイビー', lucky_number:4, lucky_item:'手帳・時計', lucky_day:'水曜日',
+    best:[1,10], good:[4,12], caution:[3,9],
+    message:'あなたの誠実さは本当に貴重なもの。時には立ち止まって、自分の感情も大切にして。感じること、表現することで、さらに豊かな人間関係が生まれます。'
+  },
+  {
+    id:8, name:'羊', emoji:'🐑', en:'Sheep',
+    color:'#b09888', bg:'rgba(176,152,136,0.12)',
+    dayName:'春の羊', nightName:'夢見る羊',
+    keyword:'調和を愛する優しい魂',
+    tagline:'温かく穏やかな調和人。みんなの心をひとつにします。',
+    personality:'温かく穏やかな性格で、どこにいっても人間関係を和やかにする調和の人。人の気持ちに敏感で、場の空気を読む能力が高い。争いを避け、みんなが幸せになれる道を探します。芸術的な感性も豊かで、美しいものに深く感動します。',
+    strengths:['協調性','優しさ','芸術的感性','気配り','柔軟性'],
+    weaknesses:['優柔不断','流されやすい','自己主張が弱い'],
+    love:'愛情深く、相手を幸せにすることに喜びを感じます。穏やかで平和な関係を大切にし、争いは避けます。自分の意見を伝えることも大切にして。',
+    work:'福祉・音楽・アート・接客など、人の感情に寄り添ったり美しさを表現する仕事に向いています。チームの雰囲気をよくする潤滑油的存在。',
+    lucky_color:'ラベンダー・ソフトクリーム', lucky_number:2, lucky_item:'柔らかいもの・花', lucky_day:'金曜日',
+    best:[2,5], good:[6,10], caution:[3,11],
+    message:'あなたの優しさは世界を温かくします。でも、あなた自身の幸せも同じくらい大切。自分の気持ちに正直になることで、さらに輝きます。'
+  },
+  {
+    id:9, name:'猿', emoji:'🐒', en:'Monkey',
+    color:'#c08040', bg:'rgba(192,128,64,0.12)',
+    dayName:'元気な猿', nightName:'賢い猿',
+    keyword:'天才的な機転師',
+    tagline:'明るく機転が利く、場を盛り上げる天才エンターテイナー。',
+    personality:'明るく好奇心旺盛で、機転が利く天才的なアイデアマン。どんな状況でもユーモアを忘れず、場を盛り上げることが得意。頭の回転が速く、複数のことを同時にこなすマルチタレント。人好きで社交的、初対面でもすぐに打ち解けます。新しいことへの挑戦が大好き。',
+    strengths:['明るさ','機転','アイデア力','社交性','好奇心'],
+    weaknesses:['飽きっぽい','軽率','集中力が続かない'],
+    love:'楽しさを最重要視する恋愛スタイル。一緒にいて笑える相手が大好き。熱しやすく冷めやすい面があり、刺激的な関係を求めがちです。',
+    work:'芸能・広告・企画・営業など、アイデアと人間力を活かす仕事で才能爆発。退屈な環境では力が出ません。',
+    lucky_color:'イエロー・オレンジ', lucky_number:9, lucky_item:'カラフルな小物・ゲーム', lucky_day:'火曜日',
+    best:[3,12], good:[1,11], caution:[4,7],
+    message:'あなたの明るさと機転は最高の才能！そのエネルギーをひとつのことに集中させてみると、驚くほど大きな成果が生まれます。'
+  },
+  {
+    id:10, name:'ペガサス', emoji:'🦄', en:'Pegasus',
+    color:'#40a8d0', bg:'rgba(64,168,208,0.12)',
+    dayName:'空翔けるペガサス', nightName:'星を駆けるペガサス',
+    keyword:'夢を翔ける理想家',
+    tagline:'高い理想と豊かな想像力。自由に夢を追いかける空の旅人。',
+    personality:'高い理想と豊かな想像力を持つ、ロマンチックな夢想家。現実を超えた大きなビジョンを描き、そこへ向かって自由に飛んでいきます。独創的な発想力と、美しいものへの深い憧れを持ちます。束縛を嫌い、精神的な自由を何より大切にします。深いところで人を感動させる力があります。',
+    strengths:['創造力','理想主義','独創性','自由な発想','感受性'],
+    weaknesses:['非現実的','気分屋','地に足がつかない'],
+    love:'ロマンチックな恋愛を夢見ます。理想が高く、現実とのギャップを感じることも。夢を一緒に語り合える相手が最高のパートナー。',
+    work:'アーティスト・作家・音楽家・映画監督など、創造性を全開にできる仕事で才能が開花。自由な環境が活躍の条件。',
+    lucky_color:'スカイブルー・ホワイト', lucky_number:11, lucky_item:'星モチーフのもの・楽器', lucky_day:'金曜日',
+    best:[1,7], good:[3,8], caution:[2,9],
+    message:'あなたの夢は空高く美しい。その翼で、現実の大地にも時々降り立って。夢と現実を繋げることで、あなたの理想は本当に形になります。'
+  },
+  {
+    id:11, name:'チーター', emoji:'🐆', en:'Cheetah',
+    color:'#c8b020', bg:'rgba(200,176,32,0.12)',
+    dayName:'疾風のチーター', nightName:'眠れないチーター',
+    keyword:'閃光のような直感人',
+    tagline:'誰よりも速く、誰よりも鋭く。直感と決断で世界を切り拓く。',
+    personality:'鋭い直感と驚異的な決断力を持つ、閃光のような存在。状況を瞬時に把握し、誰よりも速く行動に移します。独立心が強く、自分の感覚を信じる力があります。スピード感のある生き方を好み、じっくり待つことが苦手。でもその疾走感が周囲に刺激とスリルをもたらします。',
+    strengths:['直感力','決断の速さ','独立心','スピード感','適応力'],
+    weaknesses:['落ち着きがない','飽き性','ゆっくりが苦手'],
+    love:'恋愛も直感優先。「ビビッときたら即行動」スタイル。刺激的でスピーディな恋愛を好み、ドラマチックな展開が大好きです。',
+    work:'トレーダー・スポーツ選手・起業家・フリーランスなど、スピードと独立心を活かせる仕事で力を発揮。土壇場で本領を発揮します。',
+    lucky_color:'ゴールデンイエロー・ブラック', lucky_number:5, lucky_item:'スニーカー・時計', lucky_day:'火曜日',
+    best:[2,9], good:[4,1], caution:[5,6],
+    message:'その速さが最大の武器。でも、立ち止まる瞬間の中にこそ見えてくるものがあります。たまにはゆっくり深呼吸して、内なる声を聴いてみて。'
+  },
+  {
+    id:12, name:'狸', emoji:'🦝', en:'Tanuki',
+    color:'#a86840', bg:'rgba(168,104,64,0.12)',
+    dayName:'里の狸', nightName:'化ける狸',
+    keyword:'愛嬌と知恵の生活者',
+    tagline:'愛嬌たっぷりで適応力抜群。どんな場所でも上手くやっていく達人。',
+    personality:'愛嬌たっぷりで適応力に優れた、どこでも上手くやっていける生活の達人。人懐っこく、場の雰囲気を読んで自然と溶け込みます。実はしっかりとした現実感覚と知恵を持っており、地に足のついた判断ができます。家族や仲間を大切にし、コミュニティの中で人をまとめる力があります。',
+    strengths:['適応力','愛嬌','現実感覚','コミュ力','機転'],
+    weaknesses:['八方美人','優柔不断','本音を見せない'],
+    love:'愛嬌と話術で自然とモテる存在。でも本心をなかなか見せないため、深い関係になりにくいことも。相手に素の自分を見せることが大切。',
+    work:'営業・接客・政治家・エンタメ系など、人との関係を活かす仕事で才能を発揮。場の空気を読み、うまく立ち回ります。',
+    lucky_color:'アースブラウン・テラコッタ', lucky_number:8, lucky_item:'縁起物・鈴', lucky_day:'土曜日',
+    best:[5,9], good:[6,7], caution:[2,4],
+    message:'あなたの愛嬌と適応力は、人生をスムーズにする最高の才能。でも、自分の本音も大切に。素の姿を見せることで、もっと深い絆が生まれます。'
+  }
+];
+
+function calcAnimalIndex(year, month, day) {
+  const str = String(year).padStart(4,'0') + String(month).padStart(2,'0') + String(day).padStart(2,'0');
+  let sum = str.split('').reduce((a, b) => a + parseInt(b), 0);
+  while (sum > 36) {
+    sum = String(sum).split('').reduce((a, b) => a + parseInt(b), 0);
+  }
+  return ((sum - 1) % 12) + 1; // 1〜12
+}
+
+function calcType(month, day) {
+  return (month + day) % 2 === 0 ? 'night' : 'day';
+}
+
+function calculate() {
+  const raw = document.getElementById('birthInput').value.trim();
+  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
+  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  const y = parseInt(parts[1]);
+  const m = parseInt(parts[2]);
+  const d = parseInt(parts[3]);
+  if (y < 1900 || y > 2100 || m < 1 || m > 12 || d < 1 || d > 31) {
+    alert('正しい日付を入力してください'); return;
+  }
+
+  const idx = calcAnimalIndex(y, m, d);
+  const a = ANIMALS[idx - 1];
+  const typeName = calcType(m, d) === 'day' ? a.dayName : a.nightName;
+
+  // Show sections
+  document.querySelectorAll('.section').forEach(s => s.classList.add('show'));
+
+  // Animal card
+  document.getElementById('animalCard').innerHTML = `
+    <div class="animal-card" style="border-color:${a.color};background:${a.bg};color:${a.color}">
+      <span class="animal-emoji">${a.emoji}</span>
+      <div class="animal-type-badge">${typeName}</div>
+      <div class="animal-name" style="color:${a.color}">${a.name}</div>
+      <div class="animal-en">${a.en}</div>
+      <div class="animal-keyword" style="color:${a.color}">${a.keyword}</div>
+      <div class="animal-tagline">${a.tagline}</div>
+    </div>`;
+
+  // Personality
+  document.getElementById('personalityCard').innerHTML = `
+    <h3>性格・特徴</h3><p>${a.personality}</p>`;
+
+  // Traits
+  document.getElementById('traitsGrid').innerHTML = `
+    <div class="trait-card strength">
+      <h3>✦ 長所</h3>
+      <ul class="trait-list">${a.strengths.map(s=>`<li>${s}</li>`).join('')}</ul>
+    </div>
+    <div class="trait-card weakness">
+      <h3>▲ 注意点</h3>
+      <ul class="trait-list">${a.weaknesses.map(w=>`<li>${w}</li>`).join('')}</ul>
+    </div>`;
+
+  // Love & Work
+  document.getElementById('loveCard').innerHTML = `<h3>恋愛</h3><p>${a.love}</p>`;
+  document.getElementById('workCard').innerHTML = `<h3>仕事・適職</h3><p>${a.work}</p>`;
+
+  // Lucky
+  document.getElementById('luckyCard').innerHTML = `
+    <h3>ラッキー情報</h3>
+    <div class="lucky-row">
+      <div class="lucky-item">🎨 ${a.lucky_color}</div>
+      <div class="lucky-item">🔢 ${a.lucky_number}</div>
+      <div class="lucky-item">🍀 ${a.lucky_item}</div>
+      <div class="lucky-item">📅 ${a.lucky_day}</div>
+    </div>`;
+
+  // Compatibility
+  function compatBadges(ids, cls) {
+    return ids.map(i => {
+      const b = ANIMALS[i-1];
+      return `<span class="compat-badge ${cls}">${b.emoji} ${b.name}</span>`;
+    }).join('');
+  }
+  document.getElementById('compatCard').innerHTML = `
+    <h3>他の動物との相性</h3>
+    <div class="compat-group">
+      <div class="compat-label">◎ 最高の相性</div>
+      <div class="compat-animals">${compatBadges(a.best,'best')}</div>
+    </div>
+    <div class="compat-group">
+      <div class="compat-label">○ 良い相性</div>
+      <div class="compat-animals">${compatBadges(a.good,'good')}</div>
+    </div>
+    <div class="compat-group">
+      <div class="compat-label">△ 要注意</div>
+      <div class="compat-animals">${compatBadges(a.caution,'caution')}</div>
+    </div>`;
+
+  // Message
+  document.getElementById('messageCard').innerHTML = `
+    <span class="msg-emoji">${a.emoji}</span>
+    <p>${a.message}</p>`;
+
+  // Scroll to result
+  setTimeout(() => {
+    document.getElementById('animalSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+</script>
+</body>
+</html>
