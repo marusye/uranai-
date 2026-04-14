@@ -27,8 +27,8 @@
     /* Input */
     .input-section { background: var(--card); border: 1px solid rgba(200,160,40,0.3); border-radius: 16px; padding: 1.8rem; width: 100%; box-shadow: 0 0 40px rgba(74,140,80,0.07); }
     .input-section label { display: block; font-size: 0.8rem; color: var(--gold); letter-spacing: 0.1em; margin-bottom: 0.5rem; }
-    input[type="text"] { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,40,0.4); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 1rem; padding: 0.7rem 1rem; outline: none; transition: all 0.3s; }
-    input[type="text"]:focus { border-color: var(--gold); box-shadow: 0 0 12px rgba(200,160,40,0.3); }
+    input[type="date"] { width: 100%; background: rgba(255,255,255,0.04); border: 1px solid rgba(200,160,40,0.4); border-radius: 8px; color: var(--text); font-family: inherit; font-size: 1rem; padding: 0.7rem 1rem; outline: none; transition: all 0.3s; color-scheme: dark; }
+    input[type="date"]:focus { border-color: var(--gold); box-shadow: 0 0 12px rgba(200,160,40,0.3); }
     .btn { display: block; width: 100%; margin-top: 1.2rem; background: linear-gradient(135deg, #2a5a2a, #4a8c50, #2a5a2a); border: 1px solid rgba(74,140,80,0.6); border-radius: 8px; color: #fff; cursor: pointer; font-family: 'Noto Serif JP', serif; font-size: 1rem; font-weight: 700; letter-spacing: 0.3em; padding: 0.75rem; transition: all 0.2s; box-shadow: 0 2px 20px rgba(74,140,80,0.3); }
     .btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 4px 30px rgba(74,140,80,0.5); }
 
@@ -101,8 +101,8 @@
 
   <div class="input-section">
     <form onsubmit="calculate(); return false;">
-      <label>生年月日を入力してください</label>
-      <input type="text" id="birthInput" placeholder="例: 1990/1/16" autocomplete="off" inputmode="numeric">
+      <label>生年月日を選択してください</label>
+      <input type="date" id="birthInput" min="1900-01-01" max="2099-12-31">
       <button type="submit" class="btn">動物を見つける 🔍</button>
     </form>
   </div>
@@ -342,8 +342,9 @@ function calcType(month, day) {
 
 function calculate() {
   const raw = document.getElementById('birthInput').value.trim();
-  const parts = raw.match(/(\d{1,4})[\/\-\.年\s]+(\d{1,2})[\/\-\.月\s]+(\d{1,2})/);
-  if (!parts) { alert('例: 1990/1/16 の形式で入力してください'); return; }
+  if (!raw) { alert('生年月日を選択してください'); return; }
+  const parts = raw.match(/(\d{4})-(\d{2})-(\d{2})/);
+  if (!parts) { alert('生年月日を選択してください'); return; }
   const y = parseInt(parts[1]);
   const m = parseInt(parts[2]);
   const d = parseInt(parts[3]);
