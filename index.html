@@ -15,18 +15,17 @@
       align-items: center;
       padding: 40px 20px;
     }
-    h1 {
-      color: #f0d080;
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 10px;
-      text-shadow: 0 0 20px rgba(240, 208, 128, 0.5);
-    }
-    .subtitle {
-      color: #a899c8;
-      text-align: center;
+    .banner {
+      width: 100%;
+      max-width: 500px;
       margin-bottom: 40px;
-      font-size: 0.95rem;
+      border-radius: 20px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(180, 100, 255, 0.3);
+    }
+    .banner img {
+      width: 100%;
+      display: block;
     }
     .grid {
       display: grid;
@@ -75,8 +74,9 @@
   </style>
 </head>
 <body>
-  <h1>✨ 占いアプリ集 ✨</h1>
-  <p class="subtitle">お好きな占いをお選びください</p>
+  <div class="banner">
+    <img src="top-banner.png" alt="AIアプリ鑑定">
+  </div>
 
   <div class="grid">
     <a class="card" href="horoscope/index.html">
